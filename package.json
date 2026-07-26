@@ -1,0 +1,38 @@
+{
+  "name": "pagedock",
+  "version": "0.1.0",
+  "description": "A lightweight, self-hosted dock for sharing static web pages.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test --test-concurrency=1",
+    "test:coverage": "node --test --experimental-test-coverage --test-concurrency=1"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "keywords": [
+    "static-site",
+    "self-hosted",
+    "express",
+    "docker",
+    "synology"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.0",
+    "express-session": "^1.19.0",
+    "helmet": "^8.3.0",
+    "memorystore": "^1.6.8",
+    "multer": "^2.2.0",
+    "unzipper": "^0.12.5"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2",
+    "yazl": "^3.3.1"
+  }
+}

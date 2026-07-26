@@ -1,0 +1,80 @@
+import crypto from 'node:crypto';
+import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
+import { verifyCsrfToken } from '../middleware/csrf.js';
+
+function secureEqual(left, right) {
+  const leftHash = crypto.createHash('sha256').update(left).digest();
+  const rightHash = crypto.createHash('sha256').update(right).digest();
+  return crypto.timingSafeEqual(leftHash, rightHash);
+}
+
+export function createAuthRouter(config) {
+  const router = Router();
+  const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    skipSuccessfulRequests: true,
+    message: '登录尝试次数过多，请稍后再试。',
+  });
+
+  router.get('/login', (req, res) => {
+    if (req.session.authenticated) {
+      res.redirect(303, '/_pagedock/');
+      return;
+    }
+    res.render('login', { title: '登录', error: null });
+  });
+
+  router.post(
+    '/login',
+    loginLimiter,
+    verifyCsrfToken,
+    async (req, res, next) => {
+      const username = String(req.body.username || '');
+      const password = String(req.body.password || '');
+
+      if (
+        !secureEqual(username, config.adminUser) ||
+        !secureEqual(password, config.adminPassword)
+      ) {
+        res.status(401).render('login', {
+          title: '登录',
+          error: '账号或密码错误。',
+        });
+        return;
+      }
+
+      req.session.regenerate((error) => {
+        if (error) {
+          next(error);
+          return;
+        }
+        req.session.authenticated = true;
+        req.session.csrfToken = crypto.randomBytes(32).toString('base64url');
+        req.session.save((saveError) => {
+          if (saveError) {
+            next(saveError);
+            return;
+          }
+          res.redirect(303, '/_pagedock/');
+        });
+      });
+    },
+  );
+
+  router.post('/logout', verifyCsrfToken, (req, res, next) => {
+    req.session.destroy((error) => {
+      if (error) {
+        next(error);
+        return;
+      }
+      res.clearCookie('pagedock.sid', { path: '/_pagedock' });
+      res.redirect(303, '/');
+    });
+  });
+
+  return router;
+}

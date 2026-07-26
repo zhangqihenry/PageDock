@@ -1,0 +1,40 @@
+services:
+  pagedock:
+    container_name: pagedock
+    image: pagedock:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      # 左侧为 NAS 端口；如 3000 已被占用，可改为 "13000:3000"。
+      - "3000:3000"
+    environment:
+      NODE_ENV: "production"
+      PORT: "3000"
+      DATA_DIR: "/data"
+      TZ: "Asia/Shanghai"
+
+      # 必须手动更改：管理员登录账号和密码，以下密码仅用于首次测试。
+      ADMIN_USER: "admin"
+      ADMIN_PASSWORD: "admin1234"
+
+      # 必须手动更改：至少 32 字节的随机字符串，以下密钥仅用于首次测试。
+      # 可用 `openssl rand -base64 48` 生成新的 Session 密钥。
+      SESSION_SECRET: "4bqk8F2AD6sUh7tRUB5Mwc5apuh7Jz4c"
+
+      SESSION_TTL_HOURS: "12"
+
+      # 直接通过 http://NAS-IP:3000 测试时保持 false；
+      # 接入 HTTPS 反向代理后改为 true，并重新创建容器。
+      COOKIE_SECURE: "false"
+      TRUST_PROXY: "1"
+
+      # 可选：填写独立的后台域名，例如 admin.example.com；局域网测试时留空。
+      ADMIN_HOST: ""
+
+      MAX_UPLOAD_MB: "50"
+      MAX_EXTRACTED_MB: "200"
+      MAX_ZIP_FILES: "2000"
+    volumes:
+      - ./data:/data:rw
