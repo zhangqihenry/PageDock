@@ -1,6 +1,6 @@
 {
   "name": "pagedock",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A lightweight, self-hosted dock for sharing static web pages.",
   "type": "module",
   "main": "src/server.js",
