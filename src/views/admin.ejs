@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><%= title %> · PageDock</title>
-    <script src="/_pagedock/assets/theme-init.js"></script>
-    <script src="/_pagedock/assets/theme.js" defer></script>
-    <link rel="stylesheet" href="/_pagedock/assets/admin.css">
+    <script src="/_pagedock/assets/theme-init.js?v=<%= assetVersion %>"></script>
+    <script src="/_pagedock/assets/theme.js?v=<%= assetVersion %>" defer></script>
+    <link rel="stylesheet" href="/_pagedock/assets/admin.css?v=<%= assetVersion %>">
   </head>
   <body>
     <header class="bar">
-      <a class="mark" href="/"><img class="mark-logo" src="/_pagedock/assets/logo.png" alt="PageDock"></a>
+      <a class="mark" href="/"><img class="mark-logo" src="/_pagedock/assets/logo.png?v=<%= assetVersion %>" alt="PageDock"></a>
       <div class="bar-actions">
         <%- include('partials/toggles') %>
         <a class="btn" href="/"><%= t('nav.backToCatalog') %></a>
@@ -136,6 +136,9 @@
                     <td class="actions">
                       <a class="btn" href="/<%= site.pathId %>/" target="_blank" rel="noopener">
                         <%= t('table.open') %>
+                      </a>
+                      <a class="btn" href="/_pagedock/sites/<%= site.pathId %>/edit">
+                        <%= t('table.edit') %>
                       </a>
                       <form action="/_pagedock/sites/<%= site.pathId %>/delete" method="post">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">

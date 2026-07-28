@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
@@ -24,6 +25,9 @@ import { createUploadService } from './services/upload-service.js';
 import { formatUploadedAt } from './utils/date.js';
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
+const { version: packageVersion } = JSON.parse(
+  readFileSync(path.join(currentDirectory, '..', 'package.json'), 'utf8'),
+);
 
 function managementSecurityOptions(config) {
   return {
@@ -55,6 +59,7 @@ export async function createApp(options = {}) {
   app.set('trust proxy', config.trustProxy);
   app.set('view engine', 'ejs');
   app.set('views', path.join(currentDirectory, 'views'));
+  app.locals.assetVersion = packageVersion;
 
   app.use(createLocaleMiddleware(config));
 

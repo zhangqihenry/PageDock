@@ -33,6 +33,7 @@ const dictionaries = {
     'admin.emptyState': '还没有上传网页。',
     'admin.uploaded': '网页已成功上传。',
     'admin.deleted': '网页已删除。',
+    'admin.updated': '网页信息已更新。',
 
     'form.titleLabel': '网页标题',
     'form.titlePlaceholder': '例如 人力资源计算器',
@@ -53,7 +54,12 @@ const dictionaries = {
     'table.size': '占用空间',
     'table.actions': '操作',
     'table.open': '打开',
+    'table.edit': '编辑',
     'table.delete': '删除',
+
+    'edit.title': '编辑网页信息',
+    'edit.heading': '编辑网页信息',
+    'edit.save': '保存修改',
 
     'login.title': '登录',
     'login.subtitle': '登录后上传和管理网页。',
@@ -137,6 +143,7 @@ const dictionaries = {
     'admin.emptyState': 'No pages uploaded yet.',
     'admin.uploaded': 'The page was uploaded successfully.',
     'admin.deleted': 'The page was deleted.',
+    'admin.updated': 'The page information was updated.',
 
     'form.titleLabel': 'Page title',
     'form.titlePlaceholder': 'e.g. HR Calculator',
@@ -157,7 +164,12 @@ const dictionaries = {
     'table.size': 'Size',
     'table.actions': 'Actions',
     'table.open': 'Open',
+    'table.edit': 'Edit',
     'table.delete': 'Delete',
+
+    'edit.title': 'Edit Page Information',
+    'edit.heading': 'Edit page information',
+    'edit.save': 'Save changes',
 
     'login.title': 'Log In',
     'login.subtitle': 'Log in to upload and manage pages.',

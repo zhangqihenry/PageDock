@@ -47,6 +47,7 @@ function statusMessage(t, status) {
   const keys = {
     uploaded: 'admin.uploaded',
     deleted: 'admin.deleted',
+    updated: 'admin.updated',
   };
   return keys[status] ? t(keys[status]) : null;
 }
@@ -85,6 +86,26 @@ export function createAdminRouter(config, services) {
       overwrite: req.body.overwrite === 'true',
     });
     res.redirect(303, '/_pagedock/?status=uploaded');
+  });
+
+  router.get('/sites/:pathId/edit', async (req, res) => {
+    const site = await services.siteService.get(req.params.pathId);
+    res.render('edit', {
+      title: res.locals.t('edit.title'),
+      site: {
+        ...site,
+        formattedDate: formatUploadedAt(site.uploadedAt),
+      },
+    });
+  });
+
+  router.post('/sites/:pathId/edit', verifyCsrfToken, async (req, res) => {
+    await services.siteService.update(req.params.pathId, {
+      title: String(req.body.title || ''),
+      description: String(req.body.description || ''),
+      version: String(req.body.version || ''),
+    });
+    res.redirect(303, '/_pagedock/?status=updated');
   });
 
   router.post('/sites/:pathId/delete', verifyCsrfToken, async (req, res) => {

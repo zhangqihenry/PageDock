@@ -4,16 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><%= title %> · PageDock</title>
-    <script src="/_pagedock/assets/theme-init.js"></script>
-    <script src="/_pagedock/assets/theme.js" defer></script>
-    <link rel="stylesheet" href="/_pagedock/assets/admin.css">
+    <script src="/_pagedock/assets/theme-init.js?v=<%= assetVersion %>"></script>
+    <script src="/_pagedock/assets/theme.js?v=<%= assetVersion %>" defer></script>
+    <link rel="stylesheet" href="/_pagedock/assets/admin.css?v=<%= assetVersion %>">
   </head>
   <body class="login-page">
     <main class="login-card">
       <div class="login-card-tools">
         <%- include('partials/toggles') %>
       </div>
-      <a class="mark" href="/"><img class="mark-logo" src="/_pagedock/assets/logo.png" alt="PageDock"></a>
+      <a class="mark" href="/"><img class="mark-logo" src="/_pagedock/assets/logo.png?v=<%= assetVersion %>" alt="PageDock"></a>
       <p class="muted"><%= t('login.subtitle') %></p>
 
       <% if (error) { %>

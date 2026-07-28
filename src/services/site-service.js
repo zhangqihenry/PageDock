@@ -2,6 +2,11 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { AppError } from '../errors.js';
 import { assertValidPathId, isValidPathId } from '../utils/path-id.js';
+import {
+  normalizeDescription,
+  normalizeTitle,
+  normalizeVersion,
+} from '../utils/metadata-fields.js';
 
 const METADATA_FILE = '.pagedock.json';
 
@@ -47,6 +52,35 @@ async function readMetadata(siteRoot) {
     }
     throw error;
   }
+}
+
+async function writeMetadata(siteRoot, metadata) {
+  await fs.writeFile(
+    path.join(siteRoot, METADATA_FILE),
+    `${JSON.stringify(metadata, null, 2)}\n`,
+    'utf8',
+  );
+}
+
+async function describeSite(pathId, root) {
+  const [metadata, stats, sizeBytes] = await Promise.all([
+    readMetadata(root),
+    fs.stat(root),
+    directorySize(root),
+  ]);
+
+  return {
+    pathId,
+    title:
+      typeof metadata?.title === 'string' && metadata.title
+        ? metadata.title
+        : pathId,
+    description:
+      typeof metadata?.description === 'string' ? metadata.description : '',
+    version: typeof metadata?.version === 'string' ? metadata.version : '',
+    uploadedAt: metadata?.uploadedAt || stats.mtime.toISOString(),
+    sizeBytes,
+  };
 }
 
 export function createSiteService(config) {
@@ -96,33 +130,51 @@ export function createSiteService(config) {
         continue;
       }
 
-      const [metadata, stats, sizeBytes] = await Promise.all([
-        readMetadata(root),
-        fs.stat(root),
-        directorySize(root),
-      ]);
-
-      sites.push({
-        pathId: entry.name,
-        title:
-          typeof metadata?.title === 'string' && metadata.title
-            ? metadata.title
-            : entry.name,
-        description:
-          typeof metadata?.description === 'string'
-            ? metadata.description
-            : '',
-        version:
-          typeof metadata?.version === 'string' ? metadata.version : '',
-        uploadedAt: metadata?.uploadedAt || stats.mtime.toISOString(),
-        sizeBytes,
-      });
+      sites.push(await describeSite(entry.name, root));
     }
 
     sites.sort((left, right) =>
       right.uploadedAt.localeCompare(left.uploadedAt),
     );
     return sites;
+  }
+
+  async function get(pathId) {
+    const root = siteRoot(pathId);
+    if (!(await exists(pathId))) {
+      throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
+    }
+    return describeSite(pathId, root);
+  }
+
+  async function update(pathId, { title, description, version }) {
+    const root = siteRoot(pathId);
+    if (!(await exists(pathId))) {
+      throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
+    }
+
+    const normalizedTitle = normalizeTitle(title);
+    const normalizedDescription = normalizeDescription(description);
+    const normalizedVersion = normalizeVersion(version);
+
+    const [existingMetadata, stats, sizeBytes] = await Promise.all([
+      readMetadata(root),
+      fs.stat(root),
+      directorySize(root),
+    ]);
+
+    const metadata = {
+      ...existingMetadata,
+      schemaVersion: 3,
+      pathId,
+      title: normalizedTitle,
+      description: normalizedDescription,
+      version: normalizedVersion,
+      uploadedAt: existingMetadata?.uploadedAt || stats.mtime.toISOString(),
+      sizeBytes,
+    };
+    await writeMetadata(root, metadata);
+    return metadata;
   }
 
   async function remove(pathId) {
@@ -137,6 +189,8 @@ export function createSiteService(config) {
     initialize,
     exists,
     list,
+    get,
+    update,
     remove,
     siteRoot,
     directorySize,

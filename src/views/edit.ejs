@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="<%= lang === 'en' ? 'en' : 'zh-CN' %>">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= title %> · PageDock</title>
+    <script src="/_pagedock/assets/theme-init.js?v=<%= assetVersion %>"></script>
+    <script src="/_pagedock/assets/theme.js?v=<%= assetVersion %>" defer></script>
+    <link rel="stylesheet" href="/_pagedock/assets/admin.css?v=<%= assetVersion %>">
+  </head>
+  <body>
+    <header class="bar">
+      <a class="mark" href="/"><img class="mark-logo" src="/_pagedock/assets/logo.png?v=<%= assetVersion %>" alt="PageDock"></a>
+      <div class="bar-actions">
+        <%- include('partials/toggles') %>
+        <a class="btn" href="/_pagedock/"><%= t('error.backButton') %></a>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="panel">
+        <div class="panel-heading">
+          <h2><%= t('edit.heading') %></h2>
+        </div>
+
+        <dl class="detail-list">
+          <div>
+            <dt><%= t('table.path') %></dt>
+            <dd><code>/<%= site.pathId %>/</code></dd>
+          </div>
+          <div>
+            <dt><%= t('table.uploadedAt') %></dt>
+            <dd><%= site.formattedDate %></dd>
+          </div>
+        </dl>
+
+        <form
+          action="/_pagedock/sites/<%= site.pathId %>/edit"
+          method="post"
+          class="stack"
+        >
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label>
+            <%= t('form.titleLabel') %>
+            <input
+              name="title"
+              maxlength="100"
+              value="<%= site.title %>"
+              required
+            >
+          </label>
+          <label>
+            <%= t('form.versionLabel') %>
+            <input
+              name="version"
+              maxlength="40"
+              value="<%= site.version %>"
+              placeholder="<%= t('form.versionPlaceholder') %>"
+            >
+          </label>
+          <label>
+            <%= t('common.description') %>
+            <textarea
+              name="description"
+              maxlength="300"
+              rows="3"
+              placeholder="<%= t('form.descriptionPlaceholder') %>"
+            ><%= site.description %></textarea>
+          </label>
+          <button type="submit" class="btn-solid"><%= t('edit.save') %></button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
