@@ -112,29 +112,62 @@ openssl rand -base64 48
 
 ## 部署（Synology Container Manager）
 
+PageDock 每次发布都会构建好一份多架构镜像并推送到 GitHub Container
+Registry（`ghcr.io/zhangqihenry/pagedock`），所以不用把源码搬到 NAS 上、
+也不用在 NAS 上构建，只需要按下面的模板自己创建一个 `docker-compose.yml`。
+
 1. 用 File Station 新建一个用于存放 PageDock 的文件夹，例如 `docker/pagedock`
    （具体建在哪个共享卷由你自己决定，File Station 里不会显示 volume1、
    volume4 这类卷标）。
-2. 把项目根目录下的文件和文件夹（`docker-compose.yml`、`Dockerfile`、
-   `docker-entrypoint.sh`、`package.json`、`package-lock.json`、`src/`）原样
-   上传到这个文件夹。
+2. 在该文件夹下新建一个文本文件，命名为 `docker-compose.yml`，粘贴以下内容：
+
+   ```yaml
+   services:
+     pagedock:
+       container_name: pagedock
+       image: ghcr.io/zhangqihenry/pagedock:latest
+       restart: unless-stopped
+       ports:
+         # 左侧为 NAS 端口；如 3000 已被占用，可改为 "13000:3000"。
+         - "3000:3000"
+       environment:
+         NODE_ENV: "production"
+         PORT: "3000"
+         DATA_DIR: "/data"
+         TZ: "Asia/Shanghai"
+
+         # 必须手动更改：管理员登录账号和密码。
+         ADMIN_USER: "admin"
+         ADMIN_PASSWORD: "改成你自己的密码"
+
+         # 必须手动更改：至少 32 字节的随机字符串。
+         # 可用 `openssl rand -base64 48` 生成。
+         SESSION_SECRET: "改成一段至少32字节的随机字符串"
+
+         SESSION_TTL_HOURS: "12"
+
+         # 直接通过 http://NAS-IP:3000 测试时保持 false；
+         # 接入 HTTPS 反向代理后改为 true，并重新创建容器。
+         COOKIE_SECURE: "false"
+         TRUST_PROXY: "1"
+
+         # 可选：填写独立的后台域名，例如 admin.example.com；局域网测试时留空。
+         ADMIN_HOST: ""
+
+         MAX_UPLOAD_MB: "50"
+         MAX_EXTRACTED_MB: "200"
+         MAX_ZIP_FILES: "2000"
+       volumes:
+         - ./data:/data:rw
+   ```
+
 3. 在该文件夹下新建一个空的 `data` 子文件夹，用于存放持久化数据；打开它的
    "属性 → 权限"，给"所有人"授予读写权限，并应用到该文件夹、子文件夹和文件，
    避免容器写入数据时出现权限错误。
-4. 编辑 `docker-compose.yml`，至少替换以下几项：
-
-   ```yaml
-   ADMIN_USER: "你的管理员账号"
-   ADMIN_PASSWORD: "你的管理员密码"
-   SESSION_SECRET: "至少32字节的随机字符串"
-   ```
-
-5. 如果通过反向代理提供 HTTPS 访问（推荐），把以下两项也改一下：
-
-   ```yaml
-   COOKIE_SECURE: "true"
-   TRUST_PROXY: "1"
-   ```
+4. 启动容器前，确认已经把上面模板里的 `ADMIN_USER`、`ADMIN_PASSWORD`、
+   `SESSION_SECRET` 改成了自己的值——不要用模板里的占位内容直接上线。
+5. 如果通过反向代理提供 HTTPS 访问（推荐），再把 `COOKIE_SECURE` 改成
+   `"true"`。
 
    反向代理本身如何配置由你自行决定，PageDock 只需要监听容器内的 HTTP 端口
    （默认 `3000`）。如果该端口在 NAS 上已被占用，可以修改
@@ -142,16 +175,18 @@ openssl rand -base64 48
 
 6. 打开 Container Manager → 项目 → 新增，项目名称填 `pagedock`，项目路径选择
    第 1 步创建的文件夹，Compose 来源选择该文件夹下的 `docker-compose.yml`，
-   确认后构建并启动。
+   确认后拉取镜像并启动。
 7. 启动后可以在 Container Manager 的"项目"或"容器"页面查看运行状态和日志。
 
-更新 PageDock 时，替换项目源码并保留 `data` 目录，确认 `docker-compose.yml`
-中的私人配置没有被覆盖，然后在 Container Manager 中对项目重新构建即可。
+更新 PageDock 时，在 Container Manager 里停止项目后选择"更新"（或重新创建
+项目）重新拉取最新镜像即可，`data` 目录和 `docker-compose.yml` 中的配置都
+会保留。如果你固定了某个版本号 tag，记得先在 `docker-compose.yml` 里改成
+新版本号。
 
 ### 本地构建镜像（开发者自用）
 
-以下命令供你自己在开发环境中构建、调试镜像使用，最终部署仍通过 Synology
-Container Manager 完成：
+镜像平时是从 GHCR 拉取的；只有当你改了源码、想自己构建调试镜像时才需要
+以下命令：
 
 ```bash
 docker build -t pagedock:local .

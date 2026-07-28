@@ -131,32 +131,68 @@ openssl rand -base64 48
 
 ## Deployment (Synology Container Manager)
 
+PageDock publishes a prebuilt multi-arch image to GitHub Container Registry
+(`ghcr.io/zhangqihenry/pagedock`) on every release, so you don't need to
+copy the source tree or build anything on the NAS — just a
+`docker-compose.yml` file that you create yourself from the template below.
+
 1. In File Station, create a folder to hold PageDock, e.g.
    `docker/pagedock` (which shared folder/volume it lives on is entirely up
    to you — File Station doesn't expose volume labels like volume1 or
    volume4 anyway).
-2. Upload the project's root-level files and folders as-is
-   (`docker-compose.yml`, `Dockerfile`, `docker-entrypoint.sh`,
-   `package.json`, `package-lock.json`, `src/`) into that folder.
+2. In that folder, create a new text file named `docker-compose.yml` and
+   paste in the following content:
+
+   ```yaml
+   services:
+     pagedock:
+       container_name: pagedock
+       image: ghcr.io/zhangqihenry/pagedock:latest
+       restart: unless-stopped
+       ports:
+         # Host-side port; change to e.g. "13000:3000" if 3000 is taken.
+         - "3000:3000"
+       environment:
+         NODE_ENV: "production"
+         PORT: "3000"
+         DATA_DIR: "/data"
+         TZ: "Asia/Shanghai"
+
+         # Required — change these before starting the container.
+         ADMIN_USER: "admin"
+         ADMIN_PASSWORD: "change-me"
+
+         # Required — at least 32 random bytes. Generate with:
+         # openssl rand -base64 48
+         SESSION_SECRET: "change-me-to-a-random-32-byte-string"
+
+         SESSION_TTL_HOURS: "12"
+
+         # Keep false while testing over plain http://NAS-IP:3000;
+         # set to true once you put PageDock behind an HTTPS reverse proxy.
+         COOKIE_SECURE: "false"
+         TRUST_PROXY: "1"
+
+         # Optional dedicated admin hostname, e.g. admin.example.com; leave
+         # empty for LAN testing.
+         ADMIN_HOST: ""
+
+         MAX_UPLOAD_MB: "50"
+         MAX_EXTRACTED_MB: "200"
+         MAX_ZIP_FILES: "2000"
+       volumes:
+         - ./data:/data:rw
+   ```
+
 3. Create an empty `data` subfolder there for persistent storage. Open its
    "Properties → Permission", grant "Everyone" read/write access, and apply
    it to this folder, subfolders, and files — this avoids permission errors
    when the container writes data.
-4. Edit `docker-compose.yml` and replace at least the following:
-
-   ```yaml
-   ADMIN_USER: "your admin username"
-   ADMIN_PASSWORD: "your admin password"
-   SESSION_SECRET: "a random string of at least 32 bytes"
-   ```
-
+4. Before starting the container, make sure you actually changed
+   `ADMIN_USER`, `ADMIN_PASSWORD`, and `SESSION_SECRET` from the template
+   values above — don't run PageDock with the placeholder credentials.
 5. If you're serving PageDock over HTTPS through a reverse proxy
-   (recommended), also update these two:
-
-   ```yaml
-   COOKIE_SECURE: "true"
-   TRUST_PROXY: "1"
-   ```
+   (recommended), also set `COOKIE_SECURE: "true"`.
 
    How you set up the reverse proxy itself is entirely up to you — PageDock
    only needs to listen on its container HTTP port (`3000` by default). If
@@ -166,19 +202,19 @@ openssl rand -base64 48
 6. Open Container Manager → Project → Create, set the project name to
    `pagedock`, point the project path at the folder from step 1, choose the
    `docker-compose.yml` in that folder as the compose source, then confirm
-   to build and start it.
+   to pull the image and start it.
 7. Once it's running, check status and logs from the "Project" or
    "Container" pages in Container Manager.
 
-When updating PageDock, replace the project source while keeping the `data`
-directory, make sure your private settings in `docker-compose.yml` weren't
-overwritten, then rebuild the project in Container Manager.
+To update PageDock, just re-pull: in Container Manager, stop the project,
+action → "Update" (or re-create it), which pulls the latest image while
+keeping the `data` directory and your `docker-compose.yml` settings intact.
+If you pinned a specific version tag, bump it in `docker-compose.yml` first.
 
 ### Building the image locally (for developers)
 
-These commands are for your own local build/debug workflow. Actual
-deployment is still done through Synology Container Manager as described
-above:
+The image is normally pulled from GHCR — these commands are only needed if
+you're changing the source and want to build/debug your own image instead:
 
 ```bash
 docker build -t pagedock:local .
