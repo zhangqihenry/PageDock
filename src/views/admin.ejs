@@ -1,40 +1,40 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="<%= lang === 'en' ? 'en' : 'zh-CN' %>">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><%= title %> · PageDock</title>
+    <script src="/_pagedock/assets/theme-init.js"></script>
+    <script src="/_pagedock/assets/theme.js" defer></script>
     <link rel="stylesheet" href="/_pagedock/assets/admin.css">
   </head>
   <body>
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">WEB PAGE MANAGEMENT</p>
-        <h1>PageDock</h1>
-      </div>
-      <div class="topbar-actions">
-        <a class="button-link button-secondary" href="/">返回目录</a>
+    <header class="bar">
+      <a class="mark" href="/">PageDock</a>
+      <div class="bar-actions">
+        <%- include('partials/toggles') %>
+        <a class="btn" href="/"><%= t('nav.backToCatalog') %></a>
         <form action="/_pagedock/logout" method="post">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button class="button-secondary" type="submit">退出管理</button>
+          <button type="submit"><%= t('nav.logout') %></button>
         </form>
       </div>
     </header>
 
-    <main class="container">
+    <main class="wrap">
       <% if (message) { %>
         <div class="alert alert-success" role="status"><%= message %></div>
       <% } %>
 
       <section class="panel">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">UPLOAD</p>
-            <h2>上传网页</h2>
-          </div>
+        <div class="panel-heading">
+          <h2><%= t('admin.uploadHeading') %></h2>
           <p class="muted">
-            上传上限 <%= limits.upload %>；解压上限 <%= limits.extracted %>；
-            最多 <%= limits.files %> 个条目。
+            <%= t('admin.limits', {
+              upload: limits.upload,
+              extracted: limits.extracted,
+              files: limits.files,
+            }) %>
           </p>
         </div>
 
@@ -46,82 +46,79 @@
         >
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <label>
-            网页名称 / 访问路径
+            <%= t('form.pathLabel') %>
             <input
               name="pathId"
               pattern="[A-Za-z0-9_-]{1,64}"
               maxlength="64"
-              placeholder="例如 sample"
+              placeholder="<%= t('form.pathPlaceholder') %>"
               required
             >
           </label>
           <label>
-            HTML 或 ZIP 文件
+            <%= t('form.fileLabel') %>
             <input name="siteFile" type="file" accept=".html,.zip" required>
           </label>
           <label class="field-wide">
-            网页说明
+            <%= t('common.description') %>
             <textarea
               name="description"
               maxlength="300"
               rows="3"
-              placeholder="简单介绍这个网页的用途（最多 300 个字符）"
+              placeholder="<%= t('form.descriptionPlaceholder') %>"
             ></textarea>
           </label>
           <fieldset>
-            <legend>网页名称重名时</legend>
+            <legend><%= t('form.overwriteLegend') %></legend>
             <label class="radio-option">
               <input type="radio" name="overwrite" value="false" checked>
-              取消并提示
+              <%= t('form.overwriteCancel') %>
             </label>
             <label class="radio-option">
               <input type="radio" name="overwrite" value="true">
-              覆盖替换现有网页
+              <%= t('form.overwriteReplace') %>
             </label>
           </fieldset>
-          <button type="submit">上传网页</button>
+          <button type="submit" class="btn-solid"><%= t('nav.upload') %></button>
         </form>
       </section>
 
       <section class="panel">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">SITES</p>
-            <h2>已上传网页</h2>
-          </div>
-          <span class="count"><%= sites.length %></span>
+        <div class="panel-heading">
+          <h2><%= t('admin.sitesHeading') %></h2>
+          <p class="muted"><%= t('catalog.tally', { count: sites.length }) %></p>
         </div>
 
         <% if (sites.length === 0) { %>
-          <div class="empty-state">
-            <p>还没有上传网页。</p>
+          <div class="empty">
+            <p><%= t('admin.emptyState') %></p>
           </div>
         <% } else { %>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>访问路径</th>
-                  <th>网页说明</th>
-                  <th>上传时间</th>
-                  <th>占用空间</th>
-                  <th><span class="sr-only">操作</span></th>
+                  <th><%= t('table.path') %></th>
+                  <th><%= t('common.description') %></th>
+                  <th><%= t('table.uploadedAt') %></th>
+                  <th><%= t('table.size') %></th>
+                  <th><span class="sr-only"><%= t('table.actions') %></span></th>
                 </tr>
               </thead>
               <tbody>
                 <% for (const site of sites) { %>
                   <tr>
                     <td><code>/<%= site.pathId %>/</code></td>
-                    <td class="description-cell"><%= site.description || '暂无说明' %></td>
+                    <td class="description-cell"><%= site.description || t('common.noDescription') %></td>
                     <td><%= site.formattedDate %></td>
                     <td><%= site.formattedSize %></td>
                     <td class="actions">
-                      <a class="button-link" href="/<%= site.pathId %>/" target="_blank" rel="noopener">
-                        打开
+                      <a class="btn" href="/<%= site.pathId %>/" target="_blank" rel="noopener">
+                        <%= t('table.open') %>
                       </a>
                       <form action="/_pagedock/sites/<%= site.pathId %>/delete" method="post">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <button class="button-danger" type="submit">删除</button>
+                        <button class="btn-danger" type="submit"><%= t('table.delete') %></button>
                       </form>
                     </td>
                   </tr>

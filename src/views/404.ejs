@@ -1,22 +1,22 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="<%= lang === 'en' ? 'en' : 'zh-CN' %>">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><%= title %> · PageDock</title>
-    <style>
-      :root { color-scheme: dark; font-family: system-ui, sans-serif; }
-      body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: #101418; color: #f4f7f9; }
-      main { max-width: 34rem; padding: 2rem; text-align: center; }
-      strong { display: block; font-size: clamp(5rem, 20vw, 10rem); line-height: .9; color: #66d9c2; }
-      p { color: #aab7c2; }
-    </style>
+    <script src="/_pagedock/assets/theme-init.js"></script>
+    <script src="/_pagedock/assets/theme.js" defer></script>
+    <link rel="stylesheet" href="/_pagedock/assets/admin.css">
   </head>
-  <body>
-    <main>
-      <strong>404</strong>
+  <body class="login-page">
+    <main class="login-card">
+      <div class="login-card-tools">
+        <%- include('partials/toggles') %>
+      </div>
+      <p class="error-code">404</p>
       <h1><%= title %></h1>
-      <p><%= message %></p>
+      <p class="muted"><%= message %></p>
+      <a class="text-link login-back-link" href="/"><%= t('login.backLink') %></a>
     </main>
   </body>
 </html>

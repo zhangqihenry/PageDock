@@ -1,60 +1,50 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="<%= lang === 'en' ? 'en' : 'zh-CN' %>">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><%= title %> · PageDock</title>
     <meta
       name="description"
-      content="PageDock 网页目录，集中浏览和打开已发布的网页。"
+      content="<%= t('meta.description') %>"
     >
+    <script src="/_pagedock/assets/theme-init.js"></script>
+    <script src="/_pagedock/assets/theme.js" defer></script>
     <link rel="stylesheet" href="/_pagedock/assets/admin.css">
   </head>
   <body>
-    <header class="topbar catalog-topbar">
-      <div>
-        <p class="eyebrow">SHARED WEB PAGES</p>
-        <h1>PageDock</h1>
+    <header class="bar">
+      <a class="mark" href="/">PageDock</a>
+      <div class="bar-actions">
+        <%- include('partials/toggles') %>
+        <a class="btn" href="<%= adminUrl %>"><%= t('nav.upload') %></a>
       </div>
-      <a class="button-link" href="<%= adminUrl %>">上传网页</a>
     </header>
 
-    <main class="container catalog-container">
-      <section class="catalog-intro">
-        <div>
-          <p class="eyebrow">CATALOG</p>
-          <h2>网页目录</h2>
-          <p class="muted">浏览已经发布的网页，点击打开将在新窗口中显示。</p>
-        </div>
-        <span class="count"><%= sites.length %></span>
+    <main class="wrap">
+      <section class="intro">
+        <h1><%= t('catalog.title') %></h1>
+        <p class="lede"><%= t('catalog.lede') %></p>
+        <p class="tally"><%= t('catalog.tally', { count: sites.length }) %></p>
       </section>
 
       <% if (sites.length === 0) { %>
-        <section class="panel empty-state catalog-empty">
-          <h3>目录暂时为空</h3>
-          <p>点击右上角“上传网页”发布第一个网页。</p>
+        <section class="empty">
+          <p><%= t('catalog.empty') %></p>
         </section>
       <% } else { %>
-        <section class="catalog-grid" aria-label="已发布网页">
-          <% for (const site of sites) { %>
-            <article class="site-card">
-              <div class="site-card-body">
-                <p class="site-path">/<%= site.pathId %>/</p>
-                <h3><%= site.pathId %></h3>
-                <p class="site-description">
-                  <%= site.description || '暂无说明' %>
-                </p>
-              </div>
-              <a
-                class="button-link site-open-button"
-                href="/<%= site.pathId %>/"
-                target="_blank"
-                rel="noopener"
-              >
-                打开网页
-              </a>
-            </article>
-          <% } %>
+        <section class="list" aria-label="<%= t('catalog.listLabel') %>">
+          <% sites.forEach(function (site, index) { %>
+            <a class="row" href="/<%= site.pathId %>/" target="_blank" rel="noopener">
+              <span class="row-index"><%= String(index + 1).padStart(2, '0') %></span>
+              <span class="row-main">
+                <span class="row-title"><%= site.pathId %></span>
+                <span class="row-desc"><%= site.description || t('common.noDescription') %></span>
+              </span>
+              <span class="row-path mono">/<%= site.pathId %>/</span>
+              <span class="row-open"><%= t('catalog.open') %></span>
+            </a>
+          <% }); %>
         </section>
       <% } %>
     </main>

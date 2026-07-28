@@ -42,12 +42,12 @@ function createUploadMiddleware(config) {
   }).single('siteFile');
 }
 
-function statusMessage(status) {
-  const messages = {
-    uploaded: '网页已成功上传。',
-    deleted: '网页已删除。',
+function statusMessage(t, status) {
+  const keys = {
+    uploaded: 'admin.uploaded',
+    deleted: 'admin.deleted',
   };
-  return messages[status] || null;
+  return keys[status] ? t(keys[status]) : null;
 }
 
 export function createAdminRouter(config, services) {
@@ -58,17 +58,18 @@ export function createAdminRouter(config, services) {
 
   router.get('/', async (req, res) => {
     const sites = await services.siteService.list();
+    const dateLocale = res.locals.lang === 'en' ? 'en-US' : 'zh-CN';
     res.render('admin', {
-      title: '管理后台',
+      title: res.locals.t('admin.title'),
       sites: sites.map((site) => ({
         ...site,
         formattedSize: formatBytes(site.sizeBytes),
-        formattedDate: new Intl.DateTimeFormat('zh-CN', {
+        formattedDate: new Intl.DateTimeFormat(dateLocale, {
           dateStyle: 'medium',
           timeStyle: 'short',
         }).format(new Date(site.uploadedAt)),
       })),
-      message: statusMessage(req.query.status),
+      message: statusMessage(res.locals.t, req.query.status),
       limits: {
         upload: formatBytes(config.maxUploadBytes),
         extracted: formatBytes(config.maxExtractedBytes),

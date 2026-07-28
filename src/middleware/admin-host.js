@@ -14,8 +14,8 @@ export function createAdminHostMiddleware(adminHost) {
     }
 
     res.status(404).render('404', {
-      title: '页面不存在',
-      message: '请求的页面不存在。',
+      title: res.locals.t('notFound.title'),
+      message: res.locals.t('notFound.message'),
     });
   };
 }

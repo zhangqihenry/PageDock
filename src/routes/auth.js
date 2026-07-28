@@ -17,7 +17,7 @@ export function createAuthRouter(config) {
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     skipSuccessfulRequests: true,
-    message: '登录尝试次数过多，请稍后再试。',
+    message: (req, res) => res.locals.t('auth.rateLimited'),
   });
 
   router.get('/login', (req, res) => {
@@ -25,7 +25,7 @@ export function createAuthRouter(config) {
       res.redirect(303, '/_pagedock/');
       return;
     }
-    res.render('login', { title: '登录', error: null });
+    res.render('login', { title: res.locals.t('login.title'), error: null });
   });
 
   router.post(
@@ -41,8 +41,8 @@ export function createAuthRouter(config) {
         !secureEqual(password, config.adminPassword)
       ) {
         res.status(401).render('login', {
-          title: '登录',
-          error: '账号或密码错误。',
+          title: res.locals.t('login.title'),
+          error: res.locals.t('auth.invalidCredentials'),
         });
         return;
       }

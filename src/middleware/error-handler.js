@@ -1,26 +1,37 @@
 import multer from 'multer';
 import { AppError } from '../errors.js';
 
+function extractNumber(message) {
+  const match = /(\d+)/.exec(message || '');
+  return match ? match[1] : '';
+}
+
 export function notFoundHandler(req, res) {
+  const t = res.locals.t;
   res.status(404).render('404', {
-    title: '页面不存在',
-    message: '请求的页面或网页不存在。',
+    title: t('notFound.title'),
+    message: t('notFound.message'),
   });
 }
 
 export function errorHandler(error, req, res, _next) {
+  const t = res.locals.t;
   let status = error.status || 500;
-  let message = error.message || '服务器发生错误。';
+  let message = error.message || t('error.generic500');
 
   if (error instanceof multer.MulterError) {
     status = 400;
     message =
       error.code === 'LIMIT_FILE_SIZE'
-        ? '上传文件超过允许的大小限制。'
-        : `上传失败：${error.message}`;
-  } else if (!(error instanceof AppError) && status >= 500) {
+        ? t('error.multerFileSize')
+        : t('error.multerGeneric', { detail: error.message });
+  } else if (error instanceof AppError && error.code) {
+    const key = `errorCode.${error.code}`;
+    const translated = t(key, { n: extractNumber(error.message) });
+    message = translated === key ? error.message : translated;
+  } else if (status >= 500) {
     console.error(error);
-    message = '服务器发生错误，请稍后重试。';
+    message = t('error.generic500');
   }
 
   if (res.headersSent) {
@@ -29,7 +40,7 @@ export function errorHandler(error, req, res, _next) {
 
   if (req.accepts('html')) {
     res.status(status).render('error', {
-      title: status === 409 ? '路径冲突' : '操作失败',
+      title: status === 409 ? t('error.conflictTitle') : t('error.failureTitle'),
       status,
       message,
       backUrl: '/_pagedock/',

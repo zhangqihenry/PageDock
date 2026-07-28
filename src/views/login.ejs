@@ -1,16 +1,20 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="<%= lang === 'en' ? 'en' : 'zh-CN' %>">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><%= title %> · PageDock</title>
+    <script src="/_pagedock/assets/theme-init.js"></script>
+    <script src="/_pagedock/assets/theme.js" defer></script>
     <link rel="stylesheet" href="/_pagedock/assets/admin.css">
   </head>
   <body class="login-page">
     <main class="login-card">
-      <p class="eyebrow">WEB PAGE MANAGEMENT</p>
-      <h1>PageDock</h1>
-      <p class="muted">登录后上传和管理网页。</p>
+      <div class="login-card-tools">
+        <%- include('partials/toggles') %>
+      </div>
+      <a class="mark" href="/">PageDock</a>
+      <p class="muted"><%= t('login.subtitle') %></p>
 
       <% if (error) { %>
         <div class="alert alert-error" role="alert"><%= error %></div>
@@ -19,16 +23,16 @@
       <form action="/_pagedock/login" method="post" class="stack">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <label>
-          管理员账号
+          <%= t('login.usernameLabel') %>
           <input name="username" autocomplete="username" required autofocus>
         </label>
         <label>
-          管理员密码
+          <%= t('login.passwordLabel') %>
           <input type="password" name="password" autocomplete="current-password" required>
         </label>
-        <button type="submit">登录</button>
+        <button type="submit" class="btn-solid btn-full"><%= t('login.submit') %></button>
       </form>
-      <a class="text-link login-back-link" href="/">返回网页目录</a>
+      <a class="text-link login-back-link" href="/"><%= t('login.backLink') %></a>
     </main>
   </body>
 </html>

@@ -10,6 +10,7 @@ import {
   notFoundHandler,
 } from './middleware/error-handler.js';
 import { createAdminHostMiddleware } from './middleware/admin-host.js';
+import { createLocaleMiddleware } from './middleware/locale.js';
 import { exposeCsrfToken } from './middleware/csrf.js';
 import { createAdminRouter } from './routes/admin.js';
 import { createAuthRouter } from './routes/auth.js';
@@ -54,6 +55,8 @@ export async function createApp(options = {}) {
   app.set('view engine', 'ejs');
   app.set('views', path.join(currentDirectory, 'views'));
 
+  app.use(createLocaleMiddleware(config));
+
   app.use(
     '/_pagedock/assets',
     express.static(path.join(currentDirectory, 'public'), {
@@ -76,7 +79,7 @@ export async function createApp(options = {}) {
         : '/_pagedock/';
 
       res.render('catalog', {
-        title: '网页目录',
+        title: res.locals.t('catalog.title'),
         sites,
         adminUrl,
       });
