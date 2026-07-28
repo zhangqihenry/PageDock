@@ -1,15 +1,19 @@
-**[English](README.md) | [简体中文](README.zh-CN.md)**
-
 # PageDock
 
 > Turn AI-generated HTML pages into shareable web links.
 
-PageDock is a lightweight web hosting service built for personal NAS boxes and
+> 把 AI 生成的 HTML 页面变成可以直接分享的网页链接。
+
+PageDock is a lightweight web hosting service built for personal NAS and
 home servers. It runs as a single Node.js container that provides a public
 site directory, admin login, HTML/ZIP upload, static file serving, and site
 deletion.
 
-## Why PageDock
+PageDock 是一个面向个人 NAS 和家庭服务器的轻量网页托管服务。它在单个
+Node.js 容器中提供网页目录、登录管理、HTML/ZIP 上传、静态文件分发和网页
+删除功能。
+
+## Why PageDock / 为什么开发 PageDock
 
 More and more people use AI to quickly build calculators, lookup tools,
 visual reports, interactive pages, and other small utilities. AI often hands
@@ -23,6 +27,14 @@ letting someone else use it directly usually means standing up your own web
 server. Spinning up a separate deployment for every little tool is way too
 much overhead.
 
+现在越来越多人使用 AI 快速制作计算器、查询工具、可视化报告、互动页面和其他
+小工具。AI 经常直接交付一个 HTML 文件，或者一个包含 HTML、CSS、JavaScript
+和图片的压缩包。
+
+这些成果在本地打开很方便，但不像 Word 或 PDF 那样容易传播：直接发送 HTML
+文件不够直观，多文件网页必须保持完整目录结构，想让其他人直接使用通常还需要
+自己搭一个 Web 服务器，每个小工具都单独部署又太重。
+
 PageDock closes that last gap:
 
 1. Have the AI output a single HTML file, or a ZIP with `index.html` as its
@@ -31,19 +43,35 @@ PageDock closes that last gap:
 3. Get a shareable URL:
 
 ```text
-https://your-domain.example.com/sample/
+https://example.your-domain.com/sample/
+```
+
+PageDock 解决的是这最后一步：
+
+1. 让 AI 输出单个 HTML 文件，或者以 `index.html` 为入口的 ZIP。
+2. 登录 PageDock，上传文件并填写一个访问路径，例如 `sample`。
+3. 获得一个可以直接分享的网页地址：
+
+```text
+https://example.your-domain.com/sample/
 ```
 
 A single PageDock container can host any number of independent sites at
 once. Uploaded content lives in a persistent data directory, so updating the
 image or recreating the container never loses it.
 
+同一个 PageDock 容器可以持续托管多个彼此独立的网页，上传内容存放在持久化
+数据目录中，更新镜像或重建容器不会丢失。
+
 PageDock does not execute any server-side code from uploaded content, and it
 is not a general-purpose application sandbox. Tools that need a bit of
 backend logic can be added through trusted Express routes that are built
 into the image.
 
-## Features
+PageDock 不运行上传内容中的服务器端代码，也不是通用应用沙箱。需要少量后端
+逻辑的工具，可以通过随镜像一起构建的、受信任的 Express 路由进行扩展。
+
+## Features / 功能
 
 - Single admin account login — no sign-up flow, no multi-user system
 - Upload a single `.html` file, or a `.zip` with `index.html` at its root
@@ -58,25 +86,32 @@ into the image.
 - A reserved extension point for adding custom backend logic to a specific
   site path
 
-## Routes
+- 单管理员账号登录，无需注册或多用户体系
+- 上传单个 `.html` 文件，或根目录包含 `index.html` 的 `.zip` 压缩包
+- 每个网页拥有独立的访问路径，可直接分享，如 `/sample/`
+- 未登录也可浏览已发布的网页目录
+- 管理页面可查看上传时间、占用空间，支持替换或删除已上传的网页
+- 严格校验上传内容，防止路径穿越、恶意压缩包等安全问题
+- 所有数据集中存放在 `/data`，更新镜像或重建容器不丢数据
+- 预留动态工具扩展位，可按需为某个网页路径添加专属后端逻辑
 
-| Path | Purpose |
+## Routes / 访问路径
+
+| Path 路径 | Purpose 用途 |
 | --- | --- |
-| `/` | Public site directory |
-| `/_pagedock/login` | Admin login |
-| `/_pagedock/` | Upload/admin page (redirects to login when signed out) |
-| `/_pagedock/health` | Container health check |
-| `/<site-path>/` | Site homepage |
-| `/<site-path>/<asset>` | Site static asset |
-| `/<site-path>/api/*` | Optional dedicated dynamic route |
+| `/` | Public site directory 公开网页目录 |
+| `/_pagedock/login` | Admin login 管理员登录 |
+| `/_pagedock/` | Upload/admin page (redirects to login when signed out) 上传管理页面（未登录时转到登录页） |
+| `/_pagedock/health` | Container health check 容器健康检查 |
+| `/<site-path>/` | Site homepage 网页首页 |
+| `/<site-path>/<asset>` | Site static asset 网页静态资源 |
+| `/<site-path>/api/*` | Optional dedicated dynamic route 可选的专属动态路由 |
 
-Requesting a site path without a trailing slash redirects to the slash-
-terminated form, so relative references like `./style.css` resolve against
-the correct site directory.
-
-## Data Directory
+## Data Directory / 数据目录
 
 Only `/data` needs to be mounted as a persistent volume:
+
+容器内只需持久化挂载 `/data`：
 
 ```text
 /data/
@@ -100,46 +135,59 @@ Only `/data` needs to be mounted as a persistent volume:
 - `.pagedock.json`: internal PageDock metadata, never reachable through the
   static routes.
 
+- `sites`：已发布的静态网页及其说明等元数据。
+- `tool-data`：动态工具生成的私有文件（如生成的 PDF、提交记录），不会被静态暴露。
+- `work`：上传和替换时使用的临时空间，服务启动时会清理其中的旧内容。
+- `.pagedock.json`：PageDock 内部元数据，不会通过静态路由访问。
+
 Backing up the entire `/data` directory is all you need.
 
-## Configuration
+备份时只需要备份整个 `/data` 目录。
+
+## Configuration / 配置项
 
 All of the following are set directly in the `environment` block of
 `docker-compose.yml`.
 
+以下配置全部直接位于 `docker-compose.yml` 的 `environment` 部分。
+
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `ADMIN_USER` | Yes | — | Admin username |
-| `ADMIN_PASSWORD` | Yes | — | Admin password |
-| `SESSION_SECRET` | Yes | — | Cookie signing secret, at least 32 random bytes |
-| `PORT` | No | `3000` | Port the container listens on |
-| `DATA_DIR` | No | `/data` | Root of the persistent data directory |
-| `SESSION_TTL_HOURS` | No | `12` | How long a login session stays valid (hours) |
-| `COOKIE_SECURE` | No | `false` | Set to `true` when served over HTTPS |
-| `TRUST_PROXY` | No | `1` | Reverse proxy hop count; the default is usually fine |
-| `ADMIN_HOST` | No | empty | Optional — when set, the admin backend only responds on this hostname |
-| `MAX_UPLOAD_MB` | No | `50` | Max size of a single uploaded file (MB) |
-| `MAX_EXTRACTED_MB` | No | `200` | Max total size after ZIP extraction (MB) |
-| `MAX_ZIP_FILES` | No | `2000` | Max number of entries in a ZIP |
+| `ADMIN_USER` | Yes | — | Admin username 管理员账号 |
+| `ADMIN_PASSWORD` | Yes | — | Admin password 管理员密码 |
+| `SESSION_SECRET` | Yes | — | Cookie signing secret, at least 32 random bytes Cookie 签名密钥，至少 32 字节随机内容 |
+| `PORT` | No | `3000` | Port the container listens on 容器监听端口 |
+| `DATA_DIR` | No | `/data` | Root of the persistent data directory 持久数据根目录 |
+| `SESSION_TTL_HOURS` | No | `12` | How long a login session stays valid (hours) 登录状态有效时间（小时）|
+| `COOKIE_SECURE` | No | `false` | Set to `true` when served over HTTPS 通过 HTTPS 访问时应设为 `true` |
+| `TRUST_PROXY` | No | `1` | Reverse proxy hop count; the default is usually fine 反向代理层级，通常保持默认即可 |
+| `ADMIN_HOST` | No | empty | Optional — when set, the admin backend only responds on this hostname 可选，非空时后台只响应该主机名 |
+| `MAX_UPLOAD_MB` | No | `50` | Max size of a single uploaded file (MB) 单次上传文件大小上限（MB） |
+| `MAX_EXTRACTED_MB` | No | `200` | Max total size after ZIP extraction (MB) ZIP 实际解压总大小上限（MB） |
+| `MAX_ZIP_FILES` | No | `2000` | Max number of entries in a ZIP ZIP 最大条目数量|
 
 You can generate `SESSION_SECRET` with the following command, or any other
 method of producing a random string:
+
+`SESSION_SECRET` 可以用以下命令生成，也可以用任意方式生成一段随机字符串：
 
 ```bash
 openssl rand -base64 48
 ```
 
-## Deployment (Synology Container Manager)
+## Deployment (Synology Container Manager) / 部署（Synology Container Manager）
 
 PageDock publishes a prebuilt multi-arch image to GitHub Container Registry
 (`ghcr.io/zhangqihenry/pagedock`) on every release, so you don't need to
 copy the source tree or build anything on the NAS — just a
 `docker-compose.yml` file that you create yourself from the template below.
 
+PageDock 每次发布都会构建好一份多架构镜像并推送到 GitHub Container
+Registry（`ghcr.io/zhangqihenry/pagedock`），所以不用把源码搬到 NAS 上、
+也不用在 NAS 上构建，只需要按下面的模板自己创建一个 `docker-compose.yml`。
+
 1. In File Station, create a folder to hold PageDock, e.g.
-   `docker/pagedock` (which shared folder/volume it lives on is entirely up
-   to you — File Station doesn't expose volume labels like volume1 or
-   volume4 anyway).
+   `docker/pagedock`.
 2. In that folder, create a new text file named `docker-compose.yml` and
    paste in the following content:
 
@@ -160,11 +208,12 @@ copy the source tree or build anything on the NAS — just a
 
          # Required — change these before starting the container.
          ADMIN_USER: "admin"
-         ADMIN_PASSWORD: "change-me"
+         ADMIN_PASSWORD: "admin1234"
 
          # Required — at least 32 random bytes. Generate with:
          # openssl rand -base64 48
-         SESSION_SECRET: "change-me-to-a-random-32-byte-string"
+         # or Generate from `https://www.random.org/passwords/` with 32 characters long
+         SESSION_SECRET: "ZUwhwnD3bSR2gNkGn2qNfKFEZHNHF6wq"
 
          SESSION_TTL_HOURS: "12"
 
@@ -193,12 +242,6 @@ copy the source tree or build anything on the NAS — just a
    values above — don't run PageDock with the placeholder credentials.
 5. If you're serving PageDock over HTTPS through a reverse proxy
    (recommended), also set `COOKIE_SECURE: "true"`.
-
-   How you set up the reverse proxy itself is entirely up to you — PageDock
-   only needs to listen on its container HTTP port (`3000` by default). If
-   that port is already taken on your NAS, change the host-side port in
-   `ports: - "3000:3000"`.
-
 6. Open Container Manager → Project → Create, set the project name to
    `pagedock`, point the project path at the folder from step 1, choose the
    `docker-compose.yml` in that folder as the compose source, then confirm
@@ -206,29 +249,75 @@ copy the source tree or build anything on the NAS — just a
 7. Once it's running, check status and logs from the "Project" or
    "Container" pages in Container Manager.
 
+1. 用 File Station 新建一个用于存放 PageDock 的文件夹，例如 `docker/pagedock`。
+2. 在该文件夹下新建一个文本文件，命名为 `docker-compose.yml`，粘贴以下内容：
+
+   ```yaml
+   services:
+     pagedock:
+       container_name: pagedock
+       image: ghcr.io/zhangqihenry/pagedock:latest
+       restart: unless-stopped
+       ports:
+         # 左侧为 NAS 端口；如 3000 已被占用，可改为 "13000:3000"。
+         - "3000:3000"
+       environment:
+         NODE_ENV: "production"
+         PORT: "3000"
+         DATA_DIR: "/data"
+         TZ: "Asia/Shanghai"
+
+         # 必须手动更改：管理员登录账号和密码。
+         ADMIN_USER: "admin"
+         ADMIN_PASSWORD: "admin1234"
+
+         # 必须手动更改：至少 32 字节的随机字符串。
+         # 可用 `openssl rand -base64 48` 生成，选择32位。
+         # 可用 `https://www.random.org/passwords/` 生成
+         SESSION_SECRET: "ZUwhwnD3bSR2gNkGn2qNfKFEZHNHF6wq"
+
+         SESSION_TTL_HOURS: "12"
+
+         # 直接通过 http://NAS-IP:3000 测试时保持 false；
+         # 接入 HTTPS 反向代理后改为 true，并重新创建容器。
+         COOKIE_SECURE: "false"
+         TRUST_PROXY: "1"
+
+         # 可选：填写独立的后台域名，例如 admin.example.com；局域网测试时留空。
+         ADMIN_HOST: ""
+
+         MAX_UPLOAD_MB: "50"
+         MAX_EXTRACTED_MB: "200"
+         MAX_ZIP_FILES: "2000"
+       volumes:
+         - ./data:/data:rw
+   ```
+
+3. 在该文件夹下新建一个空的 `data` 子文件夹，用于存放持久化数据；打开它的
+   "属性 → 权限"，给"所有人"授予读写权限，并应用到该文件夹、子文件夹和文件，
+   避免容器写入数据时出现权限错误。
+4. 启动容器前，确认已经把上面模板里的 `ADMIN_USER`、`ADMIN_PASSWORD`、
+   `SESSION_SECRET` 改成了自己的值——不要用模板里的占位内容直接上线。
+5. 如果通过反向代理提供 HTTPS 访问（推荐），再把 `COOKIE_SECURE` 改成
+   `"true"`。
+6. 打开 Container Manager → 项目 → 新增，项目名称填 `pagedock`，项目路径选择
+   第 1 步创建的文件夹，Compose 来源选择该文件夹下的 `docker-compose.yml`，
+   确认后拉取镜像并启动。
+7. 启动后可以在 Container Manager 的"项目"或"容器"页面查看运行状态和日志。
+
 To update PageDock, just re-pull: in Container Manager, stop the project,
 action → "Update" (or re-create it), which pulls the latest image while
 keeping the `data` directory and your `docker-compose.yml` settings intact.
-If you pinned a specific version tag, bump it in `docker-compose.yml` first.
 
-### Building the image locally (for developers)
+更新 PageDock 时，在 Container Manager 里停止项目后选择"更新"（或重新创建
+项目）重新拉取最新镜像即可，`data` 目录和 `docker-compose.yml` 中的配置都
+会保留。
 
-The image is normally pulled from GHCR — these commands are only needed if
-you're changing the source and want to build/debug your own image instead:
-
-```bash
-docker build -t pagedock:local .
-docker run -d --name pagedock -p 3000:3000 \
-  -v /path/to/data:/data \
-  -e ADMIN_USER=admin \
-  -e ADMIN_PASSWORD=change-me \
-  -e SESSION_SECRET="$(openssl rand -base64 48)" \
-  pagedock:local
-```
-
-## Upload Rules
+## Upload Rules / 网页上传规则
 
 The path identifier must match:
+
+路径标识必须匹配：
 
 ```text
 ^[A-Za-z0-9_-]{1,64}$
@@ -236,9 +325,10 @@ The path identifier must match:
 
 `_pagedock` is a reserved name and cannot be used as a site path.
 
+`_pagedock` 是保留名称，不能作为网页路径使用。
+
 Uploading a single `.html` file uses it directly as the site's
 `index.html`. Uploading a `.zip` additionally requires:
-
 - An `index.html` regular file present exactly at the archive root
 - No absolute paths, `..`, backslash paths, drive letters, or null bytes
 - No duplicate paths, symlinks, or a `.pagedock.json` entry
@@ -247,25 +337,47 @@ Uploading a single `.html` file uses it directly as the site's
 - A plain single-volume ZIP using Store/Deflate compression; ZIP64 is not
   accepted under the current size limits
 
+上传单个 `.html` 文件会直接作为该网页的 `index.html`；上传 `.zip` 时需要
+满足：
+- 根目录精确存在普通文件 `index.html`
+- 不包含绝对路径、`..`、反斜杠路径、盘符或空字节
+- 不包含重复路径、符号链接或 `.pagedock.json`
+- 条目数和声明的解压大小不超过配置值，实际写入的总大小也不超过配置值
+- 使用普通单卷 ZIP 和 Store/Deflate 压缩方式；在当前大小限制下不接受 ZIP64
+
 A ZIP can contain JavaScript, CSS, images, fonts, and other static assets —
 they're only ever served to the browser as files, never executed on the
 server.
+
+ZIP 内可以包含 JavaScript、CSS、图片、字体等静态资源，它们只会作为文件发送
+给浏览器，不会在服务器进程中执行。
 
 The site description is optional, up to 300 characters. Site name,
 description, upload time, and similar metadata are stored in
 `.pagedock.json` inside each site's own directory.
 
+网页说明可留空，最多 300 个字符；网页名称、说明、上传时间等信息保存在各
+网页目录内的 `.pagedock.json` 中。
+
 Re-uploading to an existing path requires explicitly choosing "overwrite" in
 the upload form; otherwise the upload is rejected rather than silently
 replacing the existing site.
 
-## Dynamic Tool Extensions
+同名路径重复上传时，需要在上传表单中显式选择"覆盖替换"才会替换原有网页，
+否则会被拒绝，不会静默覆盖。
+
+## Dynamic Tool Extensions / 动态工具扩展
 
 Dynamic logic must be part of the source code — it cannot be uploaded
 through the admin backend. The extension point lives in
 `src/routes/tools/`.
 
+动态逻辑必须是源代码的一部分，不能通过管理后台上传。扩展入口位于
+`src/routes/tools/`。
+
 A dynamic tool exports a descriptor like this:
+
+一个动态工具导出以下描述符：
 
 ```js
 import { Router } from 'express';
@@ -289,6 +401,8 @@ export const signingTool = {
 Import it explicitly and add it to `dynamicTools` in
 `src/routes/tools/index.js`:
 
+在 `src/routes/tools/index.js` 中显式导入并加入 `dynamicTools`：
+
 ```js
 import { signingTool } from './signing-tool.js';
 
@@ -296,6 +410,8 @@ export const dynamicTools = [signingTool];
 ```
 
 Once registered:
+
+此时：
 
 ```text
 POST /signing-tool/api/submit
@@ -306,46 +422,16 @@ assets are still served statically. Dynamic routes are registered before
 the static dispatcher, so adding one never requires touching the core
 upload or static-serving logic.
 
+会进入动态路由，而 `/signing-tool/` 及其普通资源仍由静态托管处理。动态路由
+在静态分发前注册，因此不需要修改上传或静态服务核心逻辑。
+
 Dynamic API endpoints are public by default — if you need auth, rate
 limiting, or CSRF protection, add the appropriate middleware inside that
 tool's own router.
 
-## Local Development
+动态 API 默认是公开端点；需要鉴权、请求限流或 CSRF 防护时，应在对应工具的
+Router 内按该工具的调用方式添加中间件。
 
-Node.js 24 or later:
-
-```bash
-npm install
-```
-
-Set the required environment variables and start the server:
-
-```bash
-export ADMIN_USER=admin
-export ADMIN_PASSWORD='development-password'
-export SESSION_SECRET='development-secret-with-at-least-32-bytes'
-export COOKIE_SECURE=false
-export DATA_DIR=./data
-npm run dev
-```
-
-Windows PowerShell:
-
-```powershell
-$env:ADMIN_USER = "admin"
-$env:ADMIN_PASSWORD = "development-password"
-$env:SESSION_SECRET = "development-secret-with-at-least-32-bytes"
-$env:COOKIE_SECURE = "false"
-$env:DATA_DIR = "./data"
-npm run dev
-```
-
-Run the tests:
-
-```bash
-npm test
-```
-
-## License
+## License / 许可证
 
 [MIT](LICENSE)
