@@ -1,3 +1,5 @@
+<p align="center"><img src="Logo.png" alt="PageDock" width="480"></p>
+
 # PageDock
 
 > Turn AI-generated HTML pages into shareable web links.

@@ -19,6 +19,8 @@ const ACCEPTED_MIME_TYPES = Object.freeze({
   ]),
 });
 export const MAX_DESCRIPTION_LENGTH = 300;
+export const MAX_TITLE_LENGTH = 100;
+export const MAX_VERSION_LENGTH = 40;
 
 export function normalizeDescription(value) {
   const description = String(value || '')
@@ -33,6 +35,35 @@ export function normalizeDescription(value) {
     );
   }
   return description;
+}
+
+export function normalizeTitle(value) {
+  const title = String(value || '').trim();
+
+  if (!title) {
+    throw new AppError('请填写网页标题。', 400, 'TITLE_REQUIRED');
+  }
+  if (title.length > MAX_TITLE_LENGTH) {
+    throw new AppError(
+      `网页标题不能超过 ${MAX_TITLE_LENGTH} 个字符。`,
+      400,
+      'TITLE_TOO_LONG',
+    );
+  }
+  return title;
+}
+
+export function normalizeVersion(value) {
+  const version = String(value || '').trim();
+
+  if (version.length > MAX_VERSION_LENGTH) {
+    throw new AppError(
+      `版本号不能超过 ${MAX_VERSION_LENGTH} 个字符。`,
+      400,
+      'VERSION_TOO_LONG',
+    );
+  }
+  return version;
 }
 
 export function validateUploadFile(file) {
@@ -69,11 +100,20 @@ async function validateHtmlFile(htmlPath) {
   }
 }
 
-async function writeMetadata(stagingRoot, pathId, description, sizeBytes) {
+async function writeMetadata(
+  stagingRoot,
+  pathId,
+  title,
+  description,
+  version,
+  sizeBytes,
+) {
   const metadata = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     pathId,
+    title,
     description,
+    version,
     uploadedAt: new Date().toISOString(),
     sizeBytes,
   };
@@ -120,12 +160,16 @@ async function promoteStagingDirectory(stagingRoot, targetRoot, overwrite) {
 export function createUploadService(config, siteService) {
   return async function uploadSite({
     pathId,
+    title,
     description,
+    version,
     file,
     overwrite = false,
   }) {
     assertValidPathId(pathId);
+    const normalizedTitle = normalizeTitle(title);
     const normalizedDescription = normalizeDescription(description);
+    const normalizedVersion = normalizeVersion(version);
     const extension = validateUploadFile(file);
     const stagingRoot = path.join(
       config.stagingDir,
@@ -177,7 +221,9 @@ export function createUploadService(config, siteService) {
       const metadata = await writeMetadata(
         stagingRoot,
         pathId,
+        normalizedTitle,
         normalizedDescription,
+        normalizedVersion,
         sizeBytes,
       );
       await promoteStagingDirectory(stagingRoot, targetRoot, overwrite);

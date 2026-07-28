@@ -21,6 +21,7 @@ import {
 } from './routes/tools/index.js';
 import { createSiteService } from './services/site-service.js';
 import { createUploadService } from './services/upload-service.js';
+import { formatUploadedAt } from './utils/date.js';
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 
@@ -80,7 +81,10 @@ export async function createApp(options = {}) {
 
       res.render('catalog', {
         title: res.locals.t('catalog.title'),
-        sites,
+        sites: sites.map((site) => ({
+          ...site,
+          formattedDate: formatUploadedAt(site.uploadedAt),
+        })),
         adminUrl,
       });
     },

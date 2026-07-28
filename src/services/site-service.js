@@ -104,10 +104,16 @@ export function createSiteService(config) {
 
       sites.push({
         pathId: entry.name,
+        title:
+          typeof metadata?.title === 'string' && metadata.title
+            ? metadata.title
+            : entry.name,
         description:
           typeof metadata?.description === 'string'
             ? metadata.description
             : '',
+        version:
+          typeof metadata?.version === 'string' ? metadata.version : '',
         uploadedAt: metadata?.uploadedAt || stats.mtime.toISOString(),
         sizeBytes,
       });

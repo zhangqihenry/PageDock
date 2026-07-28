@@ -10,7 +10,7 @@
   </head>
   <body>
     <header class="bar">
-      <a class="mark" href="/">PageDock</a>
+      <a class="mark" href="/"><img class="mark-logo" src="/_pagedock/assets/logo.png" alt="PageDock"></a>
       <div class="bar-actions">
         <%- include('partials/toggles') %>
         <a class="btn" href="/"><%= t('nav.backToCatalog') %></a>
@@ -46,6 +46,15 @@
         >
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <label>
+            <%= t('form.titleLabel') %>
+            <input
+              name="title"
+              maxlength="100"
+              placeholder="<%= t('form.titlePlaceholder') %>"
+              required
+            >
+          </label>
+          <label>
             <%= t('form.pathLabel') %>
             <input
               name="pathId"
@@ -58,6 +67,14 @@
           <label>
             <%= t('form.fileLabel') %>
             <input name="siteFile" type="file" accept=".html,.zip" required>
+          </label>
+          <label>
+            <%= t('form.versionLabel') %>
+            <input
+              name="version"
+              maxlength="40"
+              placeholder="<%= t('form.versionPlaceholder') %>"
+            >
           </label>
           <label class="field-wide">
             <%= t('common.description') %>
@@ -98,8 +115,10 @@
             <table>
               <thead>
                 <tr>
+                  <th><%= t('table.title') %></th>
                   <th><%= t('table.path') %></th>
                   <th><%= t('common.description') %></th>
+                  <th><%= t('table.version') %></th>
                   <th><%= t('table.uploadedAt') %></th>
                   <th><%= t('table.size') %></th>
                   <th><span class="sr-only"><%= t('table.actions') %></span></th>
@@ -108,8 +127,10 @@
               <tbody>
                 <% for (const site of sites) { %>
                   <tr>
+                    <td><%= site.title %></td>
                     <td><code>/<%= site.pathId %>/</code></td>
                     <td class="description-cell"><%= site.description || t('common.noDescription') %></td>
+                    <td><%= site.version || t('common.noVersion') %></td>
                     <td><%= site.formattedDate %></td>
                     <td><%= site.formattedSize %></td>
                     <td class="actions">

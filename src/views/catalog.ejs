@@ -14,7 +14,7 @@
   </head>
   <body>
     <header class="bar">
-      <a class="mark" href="/">PageDock</a>
+      <a class="mark" href="/"><img class="mark-logo" src="/_pagedock/assets/logo.png" alt="PageDock"></a>
       <div class="bar-actions">
         <%- include('partials/toggles') %>
         <a class="btn" href="<%= adminUrl %>"><%= t('nav.upload') %></a>
@@ -38,8 +38,14 @@
             <a class="row" href="/<%= site.pathId %>/" target="_blank" rel="noopener">
               <span class="row-index"><%= String(index + 1).padStart(2, '0') %></span>
               <span class="row-main">
-                <span class="row-title"><%= site.pathId %></span>
+                <span class="row-title"><%= site.title %></span>
                 <span class="row-desc"><%= site.description || t('common.noDescription') %></span>
+                <span class="row-meta">
+                  <% if (site.version) { %>
+                    <span class="mono"><%= t('common.versionTag', { version: site.version }) %></span>
+                  <% } %>
+                  <span><%= site.formattedDate %></span>
+                </span>
               </span>
               <span class="row-path mono">/<%= site.pathId %>/</span>
               <span class="row-open"><%= t('catalog.open') %></span>

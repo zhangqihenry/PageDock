@@ -7,6 +7,7 @@ import { AppError } from '../errors.js';
 import { requireAuth } from '../middleware/require-auth.js';
 import { verifyCsrfToken } from '../middleware/csrf.js';
 import { formatBytes } from '../utils/file-size.js';
+import { formatUploadedAt } from '../utils/date.js';
 
 function createUploadMiddleware(config) {
   const storage = multer.diskStorage({
@@ -58,16 +59,12 @@ export function createAdminRouter(config, services) {
 
   router.get('/', async (req, res) => {
     const sites = await services.siteService.list();
-    const dateLocale = res.locals.lang === 'en' ? 'en-US' : 'zh-CN';
     res.render('admin', {
       title: res.locals.t('admin.title'),
       sites: sites.map((site) => ({
         ...site,
         formattedSize: formatBytes(site.sizeBytes),
-        formattedDate: new Intl.DateTimeFormat(dateLocale, {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        }).format(new Date(site.uploadedAt)),
+        formattedDate: formatUploadedAt(site.uploadedAt),
       })),
       message: statusMessage(res.locals.t, req.query.status),
       limits: {
@@ -81,7 +78,9 @@ export function createAdminRouter(config, services) {
   router.post('/upload', upload, verifyCsrfToken, async (req, res) => {
     await services.uploadSite({
       pathId: String(req.body.pathId || ''),
+      title: String(req.body.title || ''),
       description: String(req.body.description || ''),
+      version: String(req.body.version || ''),
       file: req.file,
       overwrite: req.body.overwrite === 'true',
     });
