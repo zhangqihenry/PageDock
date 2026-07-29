@@ -561,6 +561,7 @@ th {
   font-size: 0.9rem;
   line-height: 1.5;
   overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 
 .row-meta {
