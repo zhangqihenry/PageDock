@@ -1,10 +1,22 @@
 node_modules/
 coverage/
+
+# This project's automated test suite and its fixtures/helpers. Kept out of
+# the published repo on purpose — they only need to exist locally to run
+# `npm test`, not as part of what gets deployed.
 test/
 test-support/
+
+# Ad-hoc local zip snapshot of the project (e.g. manual backup or sharing
+# outside git) — not something the app or any build step generates.
 PageDock.zip
+
+# Runtime data the running app writes (uploaded sites, working/staging files,
+# etc.) — user/environment-specific, not source code. `.gitkeep` is un-ignored
+# so the empty `data/` folder itself still exists after a fresh clone.
 data/*
 !data/.gitkeep
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
