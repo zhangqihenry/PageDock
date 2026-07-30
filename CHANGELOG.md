@@ -1,5 +1,11 @@
 # Changelog / 更新日志
 
+## v0.5.0 — 2026-07-30
+
+**EN:** Completed the page edit feature: editing an uploaded page can now also replace its file (a single HTML file or a full ZIP package), clearing the old content and updating the upload time to the replacement time; editing without a new file still keeps the original upload time.
+
+**中文：** 完善了网页上传后的修改功能：编辑已上传的网页时现在也可以替换网页文件（单个 HTML 文件或整个 ZIP 压缩包），替换会清空原有内容并将上传时间更新为本次替换时间；不选择文件、仅修改信息时仍保留原上传时间。
+
 ## v0.4.1 — 2026-07-29
 
 **EN:** Fixed catalog page descriptions collapsing multi-line input onto a single line; line breaks are now preserved.
