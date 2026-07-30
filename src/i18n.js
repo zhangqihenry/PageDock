@@ -60,6 +60,9 @@ const dictionaries = {
     'edit.title': '编辑网页信息',
     'edit.heading': '编辑网页信息',
     'edit.save': '保存修改',
+    'edit.replaceFileLabel': '替换网页文件（可选）',
+    'edit.replaceFileHint':
+      '上传新的 HTML 或 ZIP 文件将完全替换当前网页的全部内容（原有文件会被清空），并将上传时间更新为本次替换时间；留空则仅保存标题、版本号和说明。',
 
     'login.title': '登录',
     'login.subtitle': '登录后上传和管理网页。',
@@ -170,6 +173,9 @@ const dictionaries = {
     'edit.title': 'Edit Page Information',
     'edit.heading': 'Edit page information',
     'edit.save': 'Save changes',
+    'edit.replaceFileLabel': 'Replace page file (optional)',
+    'edit.replaceFileHint':
+      'Uploading a new HTML or ZIP file completely replaces all current page content (existing files are cleared) and updates the upload time to now. Leave empty to only save the title, version, and description.',
 
     'login.title': 'Log In',
     'login.subtitle': 'Log in to upload and manage pages.',

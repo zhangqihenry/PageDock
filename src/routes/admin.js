@@ -96,15 +96,36 @@ export function createAdminRouter(config, services) {
         ...site,
         formattedDate: formatUploadedAt(site.uploadedAt),
       },
+      limits: {
+        upload: formatBytes(config.maxUploadBytes),
+        extracted: formatBytes(config.maxExtractedBytes),
+        files: config.maxZipFiles,
+      },
     });
   });
 
-  router.post('/sites/:pathId/edit', verifyCsrfToken, async (req, res) => {
-    await services.siteService.update(req.params.pathId, {
-      title: String(req.body.title || ''),
-      description: String(req.body.description || ''),
-      version: String(req.body.version || ''),
-    });
+  router.post('/sites/:pathId/edit', upload, verifyCsrfToken, async (req, res) => {
+    const pathId = req.params.pathId;
+    const title = String(req.body.title || '');
+    const description = String(req.body.description || '');
+    const version = String(req.body.version || '');
+
+    if (req.file) {
+      await services.uploadSite({
+        pathId,
+        title,
+        description,
+        version,
+        file: req.file,
+        overwrite: true,
+      });
+    } else {
+      await services.siteService.update(pathId, {
+        title,
+        description,
+        version,
+      });
+    }
     res.redirect(303, '/_pagedock/?status=updated');
   });
 

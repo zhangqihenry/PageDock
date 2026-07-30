@@ -37,6 +37,7 @@
         <form
           action="/_pagedock/sites/<%= site.pathId %>/edit"
           method="post"
+          enctype="multipart/form-data"
           class="stack"
         >
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -67,6 +68,18 @@
               placeholder="<%= t('form.descriptionPlaceholder') %>"
             ><%= site.description %></textarea>
           </label>
+          <label>
+            <%= t('edit.replaceFileLabel') %>
+            <input name="siteFile" type="file" accept=".html,.zip">
+          </label>
+          <p class="muted">
+            <%= t('edit.replaceFileHint') %>
+            <%= t('admin.limits', {
+              upload: limits.upload,
+              extracted: limits.extracted,
+              files: limits.files,
+            }) %>
+          </p>
           <button type="submit" class="btn-solid"><%= t('edit.save') %></button>
         </form>
       </section>
