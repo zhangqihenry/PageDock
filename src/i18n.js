@@ -10,6 +10,7 @@ const dictionaries = {
     'nav.backToCatalog': '返回目录',
     'nav.logout': '退出管理',
     'nav.toggleTheme': '切换浅色 / 深色主题',
+    'nav.githubProfile': '作者Github主页',
 
     'common.description': '网页说明',
     'common.noDescription': '暂无说明',
@@ -123,6 +124,7 @@ const dictionaries = {
     'nav.backToCatalog': 'Back to catalog',
     'nav.logout': 'Log out',
     'nav.toggleTheme': 'Toggle light / dark theme',
+    'nav.githubProfile': "Author's GitHub profile",
 
     'common.description': 'Description',
     'common.noDescription': 'No description',
