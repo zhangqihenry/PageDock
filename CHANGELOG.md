@@ -1,5 +1,11 @@
 # Changelog / 更新日志
 
+## v0.6.0 — 2026-08-04
+
+**EN:** Added page enable/disable controls: disabled pages remain available for administration and editing but are hidden from the public catalog and unavailable through their public paths. Redesigned the uploaded-page table into a compact multi-line layout that keeps long descriptions and actions on one page without horizontal scrolling, made delete actions more prominent with a red treatment, and added a GitHub profile link to the catalog header.
+
+**中文：** 新增网页启用/停用功能：停用后的网页仍可在后台管理和编辑，但不会显示在公开目录中，也无法通过公开路径访问。重新设计已上传网页表格，采用紧凑的多行布局，使较长说明和操作按钮无需横向滚动即可在一页内显示；同时将删除操作改为醒目的红色样式，并在目录页顶部新增 GitHub 主页入口。
+
 ## v0.5.0 — 2026-07-30
 
 **EN:** Completed the page edit feature: editing an uploaded page can now also replace its file (a single HTML file or a full ZIP package), clearing the old content and updating the upload time to the replacement time; editing without a new file still keeps the original upload time.
