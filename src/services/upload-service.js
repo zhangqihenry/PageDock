@@ -65,15 +65,17 @@ async function writeMetadata(
   description,
   version,
   sizeBytes,
+  enabled,
 ) {
   const metadata = {
-    schemaVersion: 3,
+    schemaVersion: 4,
     pathId,
     title,
     description,
     version,
     uploadedAt: new Date().toISOString(),
     sizeBytes,
+    enabled,
   };
   await fs.writeFile(
     path.join(stagingRoot, '.pagedock.json'),
@@ -134,7 +136,12 @@ export function createUploadService(config, siteService) {
       `${Date.now()}-${crypto.randomUUID()}`,
     );
     const targetRoot = siteService.siteRoot(pathId);
+    let enabled = true;
     let promoted = false;
+
+    if (overwrite && (await siteService.exists(pathId))) {
+      enabled = (await siteService.get(pathId)).enabled;
+    }
 
     await fs.mkdir(stagingRoot, { recursive: false });
 
@@ -183,6 +190,7 @@ export function createUploadService(config, siteService) {
         normalizedDescription,
         normalizedVersion,
         sizeBytes,
+        enabled,
       );
       await promoteStagingDirectory(stagingRoot, targetRoot, overwrite);
       promoted = true;

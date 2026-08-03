@@ -80,6 +80,7 @@ async function describeSite(pathId, root) {
     version: typeof metadata?.version === 'string' ? metadata.version : '',
     uploadedAt: metadata?.uploadedAt || stats.mtime.toISOString(),
     sizeBytes,
+    enabled: metadata?.enabled !== false,
   };
 }
 
@@ -116,7 +117,15 @@ export function createSiteService(config) {
     }
   }
 
-  async function list() {
+  async function isPublished(pathId) {
+    if (!(await exists(pathId))) {
+      return false;
+    }
+    const metadata = await readMetadata(siteRoot(pathId));
+    return metadata?.enabled !== false;
+  }
+
+  async function list({ includeDisabled = false } = {}) {
     const entries = await fs.readdir(config.sitesDir, { withFileTypes: true });
     const sites = [];
 
@@ -130,7 +139,10 @@ export function createSiteService(config) {
         continue;
       }
 
-      sites.push(await describeSite(entry.name, root));
+      const site = await describeSite(entry.name, root);
+      if (includeDisabled || site.enabled) {
+        sites.push(site);
+      }
     }
 
     sites.sort((left, right) =>
@@ -165,13 +177,38 @@ export function createSiteService(config) {
 
     const metadata = {
       ...existingMetadata,
-      schemaVersion: 3,
+      schemaVersion: 4,
       pathId,
       title: normalizedTitle,
       description: normalizedDescription,
       version: normalizedVersion,
       uploadedAt: existingMetadata?.uploadedAt || stats.mtime.toISOString(),
       sizeBytes,
+    };
+    await writeMetadata(root, metadata);
+    return metadata;
+  }
+
+  async function setEnabled(pathId, enabled) {
+    const root = siteRoot(pathId);
+    if (!(await exists(pathId))) {
+      throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
+    }
+
+    const [existingMetadata, site] = await Promise.all([
+      readMetadata(root),
+      describeSite(pathId, root),
+    ]);
+    const metadata = {
+      ...existingMetadata,
+      schemaVersion: 4,
+      pathId,
+      title: site.title,
+      description: site.description,
+      version: site.version,
+      uploadedAt: site.uploadedAt,
+      sizeBytes: site.sizeBytes,
+      enabled: Boolean(enabled),
     };
     await writeMetadata(root, metadata);
     return metadata;
@@ -188,9 +225,11 @@ export function createSiteService(config) {
   return {
     initialize,
     exists,
+    isPublished,
     list,
     get,
     update,
+    setEnabled,
     remove,
     siteRoot,
     directorySize,

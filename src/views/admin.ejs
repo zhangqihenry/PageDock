@@ -112,34 +112,53 @@
           </div>
         <% } else { %>
           <div class="table-wrap">
-            <table>
+            <table class="admin-sites-table">
+              <colgroup>
+                <col class="site-title-column">
+                <col class="site-description-column">
+                <col class="site-meta-column">
+                <col class="site-actions-column">
+              </colgroup>
               <thead>
                 <tr>
                   <th><%= t('table.title') %></th>
-                  <th><%= t('table.path') %></th>
                   <th><%= t('common.description') %></th>
-                  <th><%= t('table.version') %></th>
-                  <th><%= t('table.uploadedAt') %></th>
-                  <th><%= t('table.size') %></th>
+                  <th><%= t('table.details') %></th>
                   <th><span class="sr-only"><%= t('table.actions') %></span></th>
                 </tr>
               </thead>
               <tbody>
                 <% for (const site of sites) { %>
-                  <tr>
-                    <td><%= site.title %></td>
-                    <td><code>/<%= site.pathId %>/</code></td>
+                  <tr class="<%= site.enabled ? '' : 'site-disabled' %>">
+                    <td class="site-title-cell">
+                      <strong><%= site.title %></strong>
+                      <code class="site-subline">/<%= site.pathId %>/</code>
+                      <span class="site-status <%= site.enabled ? 'is-enabled' : 'is-disabled' %>">
+                        <%= t(site.enabled ? 'table.enabledStatus' : 'table.disabledStatus') %>
+                      </span>
+                    </td>
                     <td class="description-cell"><%= site.description || t('common.noDescription') %></td>
-                    <td><%= site.version || t('common.noVersion') %></td>
-                    <td><%= site.formattedDate %></td>
-                    <td><%= site.formattedSize %></td>
+                    <td class="site-meta-cell">
+                      <span><%= site.version || t('common.noVersion') %></span>
+                      <span><%= site.formattedDate %></span>
+                      <span><%= site.formattedSize %></span>
+                    </td>
                     <td class="actions">
-                      <a class="btn" href="/<%= site.pathId %>/" target="_blank" rel="noopener">
-                        <%= t('table.open') %>
-                      </a>
+                      <% if (site.enabled) { %>
+                        <a class="btn" href="/<%= site.pathId %>/" target="_blank" rel="noopener">
+                          <%= t('table.open') %>
+                        </a>
+                      <% } else { %>
+                        <span class="btn btn-disabled" aria-disabled="true"><%= t('table.open') %></span>
+                      <% } %>
                       <a class="btn" href="/_pagedock/sites/<%= site.pathId %>/edit">
                         <%= t('table.edit') %>
                       </a>
+                      <form action="/_pagedock/sites/<%= site.pathId %>/visibility" method="post">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <input type="hidden" name="enabled" value="<%= site.enabled ? 'false' : 'true' %>">
+                        <button type="submit"><%= t(site.enabled ? 'table.disable' : 'table.enable') %></button>
+                      </form>
                       <form action="/_pagedock/sites/<%= site.pathId %>/delete" method="post">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button class="btn-danger" type="submit"><%= t('table.delete') %></button>

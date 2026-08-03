@@ -211,13 +211,27 @@ button:hover {
 }
 
 .btn-danger {
-  border-color: var(--rule);
-  color: var(--ink-muted);
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .btn-danger:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-ink);
+  opacity: 0.9;
+}
+
+.btn-disabled {
+  border-color: var(--rule);
+  color: var(--ink-faint);
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.btn-disabled:hover {
+  border-color: var(--rule);
+  color: var(--ink-faint);
 }
 
 .btn-full {
@@ -431,12 +445,33 @@ button:focus-visible,
 /* ---------- Table (admin site list) ---------- */
 
 .table-wrap {
-  overflow-x: auto;
+  overflow-x: visible;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.admin-sites-table {
+  table-layout: fixed;
+  font-size: 0.75rem;
+}
+
+.site-title-column {
+  width: 21%;
+}
+
+.site-description-column {
+  width: 31%;
+}
+
+.site-meta-column {
+  width: 20%;
+}
+
+.site-actions-column {
+  width: 28%;
 }
 
 th,
@@ -458,10 +493,8 @@ th:last-child {
 }
 
 .description-cell {
-  max-width: 24rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
 }
 
 th {
@@ -472,13 +505,61 @@ th {
 }
 
 .actions {
-  display: flex;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
 .actions form {
   margin: 0;
+}
+
+.actions .btn,
+.actions button {
+  width: 100%;
+  min-height: 2.2rem;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.75rem;
+}
+
+.site-title-cell,
+.site-meta-cell {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.site-title-cell strong,
+.site-meta-cell span,
+.site-subline {
+  display: block;
+}
+
+.site-subline,
+.site-meta-cell span + span {
+  margin-top: 0.35rem;
+  color: var(--ink-muted);
+}
+
+.site-status {
+  display: inline-block;
+  margin-top: 0.55rem;
+  border: 1px solid var(--rule);
+  padding: 0.15rem 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.site-status.is-enabled {
+  color: var(--ink-muted);
+}
+
+.site-status.is-disabled {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.site-disabled > td:not(.actions) {
+  opacity: 0.68;
 }
 
 /* ---------- Catalog intro ---------- */
@@ -631,5 +712,28 @@ th {
   .row-open {
     grid-column: 2;
     color: var(--accent);
+  }
+
+  .admin-sites-table colgroup,
+  .admin-sites-table thead {
+    display: none;
+  }
+
+  .admin-sites-table,
+  .admin-sites-table tbody,
+  .admin-sites-table tr,
+  .admin-sites-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-sites-table tr {
+    border-bottom: 1px solid var(--rule);
+    padding-block: 1rem;
+  }
+
+  .admin-sites-table td {
+    border: 0;
+    padding: 0.4rem 0;
   }
 }

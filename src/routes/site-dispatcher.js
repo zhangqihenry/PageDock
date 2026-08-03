@@ -59,7 +59,7 @@ export function createSiteDispatcher(siteService) {
       next();
       return;
     }
-    if (!(await siteService.exists(parsed.pathId))) {
+    if (!(await siteService.isPublished(parsed.pathId))) {
       next();
       return;
     }

@@ -48,6 +48,8 @@ function statusMessage(t, status) {
     uploaded: 'admin.uploaded',
     deleted: 'admin.deleted',
     updated: 'admin.updated',
+    disabled: 'admin.disabled',
+    enabled: 'admin.enabled',
   };
   return keys[status] ? t(keys[status]) : null;
 }
@@ -59,7 +61,7 @@ export function createAdminRouter(config, services) {
   router.use(requireAuth);
 
   router.get('/', async (req, res) => {
-    const sites = await services.siteService.list();
+    const sites = await services.siteService.list({ includeDisabled: true });
     res.render('admin', {
       title: res.locals.t('admin.title'),
       sites: sites.map((site) => ({
@@ -132,6 +134,15 @@ export function createAdminRouter(config, services) {
   router.post('/sites/:pathId/delete', verifyCsrfToken, async (req, res) => {
     await services.siteService.remove(req.params.pathId);
     res.redirect(303, '/_pagedock/?status=deleted');
+  });
+
+  router.post('/sites/:pathId/visibility', verifyCsrfToken, async (req, res) => {
+    if (req.body.enabled !== 'true' && req.body.enabled !== 'false') {
+      throw new AppError('网页状态无效。', 400, 'INVALID_SITE_STATUS');
+    }
+    const enabled = req.body.enabled === 'true';
+    await services.siteService.setEnabled(req.params.pathId, enabled);
+    res.redirect(303, `/_pagedock/?status=${enabled ? 'enabled' : 'disabled'}`);
   });
 
   router.use((error, req, _res, next) => {

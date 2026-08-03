@@ -35,6 +35,8 @@ const dictionaries = {
     'admin.uploaded': '网页已成功上传。',
     'admin.deleted': '网页已删除。',
     'admin.updated': '网页信息已更新。',
+    'admin.disabled': '网页已停用。',
+    'admin.enabled': '网页已启用。',
 
     'form.titleLabel': '网页标题',
     'form.titlePlaceholder': '例如 人力资源计算器',
@@ -53,10 +55,15 @@ const dictionaries = {
     'table.version': '版本号',
     'table.uploadedAt': '上传时间',
     'table.size': '占用空间',
+    'table.details': '版本 / 上传时间',
     'table.actions': '操作',
     'table.open': '打开',
     'table.edit': '编辑',
     'table.delete': '删除',
+    'table.disable': '停用',
+    'table.enable': '启用',
+    'table.enabledStatus': '已启用',
+    'table.disabledStatus': '已停用',
 
     'edit.title': '编辑网页信息',
     'edit.heading': '编辑网页信息',
@@ -91,9 +98,10 @@ const dictionaries = {
     'errorCode.INVALID_INDEX': 'ZIP 根目录下的 index.html 必须是普通文件。',
     'errorCode.SITE_CONFLICT':
       '该网页名称或访问路径已经存在。请选择“覆盖替换”后重新上传，或取消本次操作。',
-    'errorCode.SITE_NOT_FOUND': '要删除的网页不存在。',
+    'errorCode.SITE_NOT_FOUND': '网页不存在或已被删除。',
     'errorCode.INVALID_PATH_ID':
       '路径标识只能包含字母、数字、连字符和下划线，长度为 1–64 个字符，且不能使用保留名称。',
+    'errorCode.INVALID_SITE_STATUS': '网页状态无效。',
     'errorCode.RESERVED_ZIP_FILE': 'ZIP 不能包含 PageDock 的内部元数据文件。',
     'errorCode.INVALID_ZIP_SIZE': 'ZIP 中存在无效的条目大小。',
     'errorCode.INVALID_ZIP_SIGNATURE': '上传文件不是有效的 ZIP 压缩包。',
@@ -149,6 +157,8 @@ const dictionaries = {
     'admin.uploaded': 'The page was uploaded successfully.',
     'admin.deleted': 'The page was deleted.',
     'admin.updated': 'The page information was updated.',
+    'admin.disabled': 'The page was disabled.',
+    'admin.enabled': 'The page was enabled.',
 
     'form.titleLabel': 'Page title',
     'form.titlePlaceholder': 'e.g. HR Calculator',
@@ -167,10 +177,15 @@ const dictionaries = {
     'table.version': 'Version',
     'table.uploadedAt': 'Uploaded',
     'table.size': 'Size',
+    'table.details': 'Version / Uploaded',
     'table.actions': 'Actions',
     'table.open': 'Open',
     'table.edit': 'Edit',
     'table.delete': 'Delete',
+    'table.disable': 'Disable',
+    'table.enable': 'Enable',
+    'table.enabledStatus': 'Enabled',
+    'table.disabledStatus': 'Disabled',
 
     'edit.title': 'Edit Page Information',
     'edit.heading': 'Edit page information',
@@ -205,9 +220,10 @@ const dictionaries = {
     'errorCode.INVALID_INDEX': 'The root index.html in the ZIP archive must be a regular file.',
     'errorCode.SITE_CONFLICT':
       'That page name or path already exists. Choose "Overwrite" to replace it, or cancel this upload.',
-    'errorCode.SITE_NOT_FOUND': 'The page you tried to delete does not exist.',
+    'errorCode.SITE_NOT_FOUND': 'The page does not exist or has been deleted.',
     'errorCode.INVALID_PATH_ID':
       'The path ID may only contain letters, numbers, hyphens, and underscores (1–64 characters), and must not be a reserved name.',
+    'errorCode.INVALID_SITE_STATUS': 'The page status is invalid.',
     'errorCode.RESERVED_ZIP_FILE': "The ZIP archive cannot contain PageDock's internal metadata files.",
     'errorCode.INVALID_ZIP_SIZE': 'The ZIP archive contains an entry with an invalid size.',
     'errorCode.INVALID_ZIP_SIGNATURE': 'The uploaded file is not a valid ZIP archive.',
