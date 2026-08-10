@@ -1,5 +1,11 @@
 # Changelog / 更新日志
 
+## v0.8.0 — 2026-08-11
+
+**EN:** Reworked page sorting: the sort number is no longer set at upload time — the uploaded-pages table now has its own column with an inline field to set or clear a page's sort number directly, no need to open the edit page. Uploading or replacing a page's file always preserves its existing sort number. Also added a small version badge to the top right of the catalog page, linking to the matching GitHub release.
+
+**中文：** 重新设计了网页排序功能：排序数字不再需要在上传时指定——已上传网页表格现在有独立的一列，可以直接在表格里输入或清空排序数字，无需进入编辑页面。上传或替换网页文件时会保留原有的排序数字。另外在目录页右上角新增了一个版本号标识，点击可跳转到对应的 GitHub Release。
+
 ## v0.7.0 — 2026-08-11
 
 **EN:** Uploaded pages can now be given an optional sort number. Pages with a sort number are listed above pages without one, ordered from highest to lowest; pages without a sort number keep the previous behavior of sorting by most recently uploaded. The number can be set on upload or edited later.
