@@ -1,5 +1,11 @@
 # Changelog / 更新日志
 
+## v0.7.0 — 2026-08-11
+
+**EN:** Uploaded pages can now be given an optional sort number. Pages with a sort number are listed above pages without one, ordered from highest to lowest; pages without a sort number keep the previous behavior of sorting by most recently uploaded. The number can be set on upload or edited later.
+
+**中文：** 已上传的网页现在可以设置一个可选的排序数字。设置了排序数字的网页会显示在未设置的网页之前，按数字从大到小排列；未设置排序数字的网页仍按上传时间从新到旧排列。排序数字可以在上传时填写，也可以之后编辑修改。
+
 ## v0.6.0 — 2026-08-04
 
 **EN:** Added page enable/disable controls: disabled pages remain available for administration and editing but are hidden from the public catalog and unavailable through their public paths. Redesigned the uploaded-page table into a compact multi-line layout that keeps long descriptions and actions on one page without horizontal scrolling, made delete actions more prominent with a red treatment, and added a GitHub profile link to the catalog header.
