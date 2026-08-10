@@ -102,15 +102,8 @@
 
       <section class="panel">
         <div class="panel-heading">
-          <div>
-            <h2><%= t('admin.sitesHeading') %></h2>
-            <p class="muted"><%= t('catalog.tally', { count: sites.length }) %></p>
-          </div>
-          <% if (sites.length > 0) { %>
-            <button form="sort-order-form" type="submit" class="btn-solid">
-              <%= t('table.saveOrder') %>
-            </button>
-          <% } %>
+          <h2><%= t('admin.sitesHeading') %></h2>
+          <p class="muted"><%= t('catalog.tally', { count: sites.length }) %></p>
         </div>
 
         <% if (sites.length === 0) { %>
@@ -193,6 +186,17 @@
                   </tr>
                 <% } %>
               </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3"></td>
+                  <td class="site-order-cell">
+                    <button form="sort-order-form" type="submit">
+                      <%= t('table.saveOrder') %>
+                    </button>
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         <% } %>
