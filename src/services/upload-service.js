@@ -6,7 +6,6 @@ import { AppError, ConflictError } from '../errors.js';
 import { assertValidPathId } from '../utils/path-id.js';
 import {
   normalizeDescription,
-  normalizeSortOrder,
   normalizeTitle,
   normalizeVersion,
 } from '../utils/metadata-fields.js';
@@ -126,7 +125,6 @@ export function createUploadService(config, siteService) {
     title,
     description,
     version,
-    sortOrder,
     file,
     overwrite = false,
   }) {
@@ -134,7 +132,6 @@ export function createUploadService(config, siteService) {
     const normalizedTitle = normalizeTitle(title);
     const normalizedDescription = normalizeDescription(description);
     const normalizedVersion = normalizeVersion(version);
-    const normalizedSortOrder = normalizeSortOrder(sortOrder);
     const extension = validateUploadFile(file);
     const stagingRoot = path.join(
       config.stagingDir,
@@ -142,10 +139,16 @@ export function createUploadService(config, siteService) {
     );
     const targetRoot = siteService.siteRoot(pathId);
     let enabled = true;
+    // The sort order is only ever set from the admin table, never here — an
+    // upload (including replacing a page's file) always keeps whatever sort
+    // order the page already had, and a brand new page has none.
+    let sortOrder = null;
     let promoted = false;
 
     if (overwrite && (await siteService.exists(pathId))) {
-      enabled = (await siteService.get(pathId)).enabled;
+      const existing = await siteService.get(pathId);
+      enabled = existing.enabled;
+      sortOrder = existing.sortOrder;
     }
 
     await fs.mkdir(stagingRoot, { recursive: false });
@@ -194,7 +197,7 @@ export function createUploadService(config, siteService) {
         normalizedTitle,
         normalizedDescription,
         normalizedVersion,
-        normalizedSortOrder,
+        sortOrder,
         sizeBytes,
         enabled,
       );

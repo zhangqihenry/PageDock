@@ -76,16 +76,6 @@
               placeholder="<%= t('form.versionPlaceholder') %>"
             >
           </label>
-          <label>
-            <%= t('form.sortOrderLabel') %>
-            <input
-              name="sortOrder"
-              type="number"
-              step="1"
-              inputmode="numeric"
-              placeholder="<%= t('form.sortOrderPlaceholder') %>"
-            >
-          </label>
           <label class="field-wide">
             <%= t('common.description') %>
             <textarea
@@ -127,6 +117,7 @@
                 <col class="site-title-column">
                 <col class="site-description-column">
                 <col class="site-meta-column">
+                <col class="site-order-column">
                 <col class="site-actions-column">
               </colgroup>
               <thead>
@@ -134,6 +125,7 @@
                   <th><%= t('table.title') %></th>
                   <th><%= t('common.description') %></th>
                   <th><%= t('table.details') %></th>
+                  <th><%= t('table.sortOrder') %></th>
                   <th><span class="sr-only"><%= t('table.actions') %></span></th>
                 </tr>
               </thead>
@@ -152,9 +144,22 @@
                       <span><%= site.version || t('common.noVersion') %></span>
                       <span><%= site.formattedDate %></span>
                       <span><%= site.formattedSize %></span>
-                      <span>
-                        <%= site.sortOrder === null ? t('table.noSortOrder') : t('table.sortOrder') + ' ' + site.sortOrder %>
-                      </span>
+                    </td>
+                    <td class="site-order-cell">
+                      <form action="/_pagedock/sites/<%= site.pathId %>/sort-order" method="post">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <input
+                          class="site-order-input"
+                          name="sortOrder"
+                          type="number"
+                          step="1"
+                          inputmode="numeric"
+                          value="<%= site.sortOrder === null ? '' : site.sortOrder %>"
+                          placeholder="<%= t('table.noSortOrder') %>"
+                          aria-label="<%= t('table.sortOrder') %>"
+                        >
+                        <button type="submit"><%= t('table.save') %></button>
+                      </form>
                     </td>
                     <td class="actions">
                       <% if (site.enabled) { %>

@@ -17,6 +17,13 @@
       <a class="mark" href="/"><img class="mark-logo" src="/_pagedock/assets/logo.png?v=<%= assetVersion %>" alt="PageDock"></a>
       <div class="bar-actions">
         <a
+          class="version-tag mono"
+          href="https://github.com/zhangqihenry/PageDock/releases/tag/v<%= assetVersion %>"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="<%= t('nav.versionLabel', { version: assetVersion }) %>"
+        >v<%= assetVersion %></a>
+        <a
           class="icon-button"
           href="https://github.com/zhangqihenry"
           target="_blank"

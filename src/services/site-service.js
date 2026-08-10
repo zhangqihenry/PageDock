@@ -175,7 +175,7 @@ export function createSiteService(config) {
     return describeSite(pathId, root);
   }
 
-  async function update(pathId, { title, description, version, sortOrder }) {
+  async function update(pathId, { title, description, version }) {
     const root = siteRoot(pathId);
     if (!(await exists(pathId))) {
       throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
@@ -184,7 +184,6 @@ export function createSiteService(config) {
     const normalizedTitle = normalizeTitle(title);
     const normalizedDescription = normalizeDescription(description);
     const normalizedVersion = normalizeVersion(version);
-    const normalizedSortOrder = normalizeSortOrder(sortOrder);
 
     const [existingMetadata, stats, sizeBytes] = await Promise.all([
       readMetadata(root),
@@ -199,9 +198,36 @@ export function createSiteService(config) {
       title: normalizedTitle,
       description: normalizedDescription,
       version: normalizedVersion,
-      sortOrder: normalizedSortOrder,
       uploadedAt: existingMetadata?.uploadedAt || stats.mtime.toISOString(),
       sizeBytes,
+    };
+    await writeMetadata(root, metadata);
+    return metadata;
+  }
+
+  async function setSortOrder(pathId, sortOrder) {
+    const root = siteRoot(pathId);
+    if (!(await exists(pathId))) {
+      throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
+    }
+
+    const normalizedSortOrder = normalizeSortOrder(sortOrder);
+
+    const [existingMetadata, site] = await Promise.all([
+      readMetadata(root),
+      describeSite(pathId, root),
+    ]);
+    const metadata = {
+      ...existingMetadata,
+      schemaVersion: 4,
+      pathId,
+      title: site.title,
+      description: site.description,
+      version: site.version,
+      sortOrder: normalizedSortOrder,
+      uploadedAt: site.uploadedAt,
+      sizeBytes: site.sizeBytes,
+      enabled: site.enabled,
     };
     await writeMetadata(root, metadata);
     return metadata;
@@ -249,6 +275,7 @@ export function createSiteService(config) {
     get,
     update,
     setEnabled,
+    setSortOrder,
     remove,
     siteRoot,
     directorySize,
