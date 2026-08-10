@@ -1,5 +1,11 @@
 # Changelog / 更新日志
 
+## v0.8.1 — 2026-08-11
+
+**EN:** The sort-order column in the admin table now saves all rows at once with a single "Save order" button, instead of a save button per row. The number field no longer shows a hint text that could get cut off — a blank field simply defaults to 0, and a decimal, a negative number, or non-numeric text is silently treated as 0 as well.
+
+**中文：** 已上传网页表格的排序数字列现在改为一次性保存所有行，用一个「保存排序」按钮代替原来每行一个的保存按钮。排序数字输入框不再显示可能被截断的提示文字——留空默认就是 0，输入小数、负数或非数字文本也会自动按 0 处理。
+
 ## v0.8.0 — 2026-08-11
 
 **EN:** Reworked page sorting: the sort number is no longer set at upload time — the uploaded-pages table now has its own column with an inline field to set or clear a page's sort number directly, no need to open the edit page. Uploading or replacing a page's file always preserves its existing sort number. Also added a small version badge to the top right of the catalog page, linking to the matching GitHub release.
