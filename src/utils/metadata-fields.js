@@ -3,7 +3,7 @@ import { AppError } from '../errors.js';
 export const MAX_DESCRIPTION_LENGTH = 300;
 export const MAX_TITLE_LENGTH = 100;
 export const MAX_VERSION_LENGTH = 40;
-export const MIN_SORT_ORDER = -999999;
+export const DEFAULT_SORT_ORDER = 0;
 export const MAX_SORT_ORDER = 999999;
 
 export function normalizeDescription(value) {
@@ -50,30 +50,21 @@ export function normalizeVersion(value) {
   return version;
 }
 
-// Returns an integer, or null when no sort order was provided. Pages with a
-// sort order are shown above pages without one, ordered by that number from
-// high to low; pages without one fall back to most-recently-uploaded first.
+// Returns a non-negative integer. Pages sort by this number from high to
+// low, tied pages falling back to most-recently-uploaded first. Anything
+// that isn't a plain non-negative whole number (empty, a decimal, a
+// negative number, non-numeric text) is silently treated as the default,
+// rather than rejected — this field is edited inline in a table, not
+// through a validated form.
 export function normalizeSortOrder(value) {
   const raw = String(value ?? '').trim();
-  if (!raw) {
-    return null;
-  }
-
-  if (!/^-?\d+$/.test(raw)) {
-    throw new AppError('排序数字必须是整数。', 400, 'SORT_ORDER_INVALID');
+  if (!/^\d+$/.test(raw)) {
+    return DEFAULT_SORT_ORDER;
   }
 
   const sortOrder = Number(raw);
-  if (
-    !Number.isSafeInteger(sortOrder) ||
-    sortOrder < MIN_SORT_ORDER ||
-    sortOrder > MAX_SORT_ORDER
-  ) {
-    throw new AppError(
-      `排序数字必须在 ${MIN_SORT_ORDER} 到 ${MAX_SORT_ORDER} 之间。`,
-      400,
-      'SORT_ORDER_INVALID',
-    );
+  if (!Number.isSafeInteger(sortOrder)) {
+    return DEFAULT_SORT_ORDER;
   }
-  return sortOrder;
+  return Math.min(sortOrder, MAX_SORT_ORDER);
 }

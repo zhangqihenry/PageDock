@@ -145,11 +145,14 @@ export function createAdminRouter(config, services) {
     res.redirect(303, `/_pagedock/?status=${enabled ? 'enabled' : 'disabled'}`);
   });
 
-  router.post('/sites/:pathId/sort-order', verifyCsrfToken, async (req, res) => {
-    await services.siteService.setSortOrder(
-      req.params.pathId,
-      String(req.body.sortOrder || ''),
-    );
+  router.post('/sites/sort-order', verifyCsrfToken, async (req, res) => {
+    const pathIds = [].concat(req.body.pathId || []);
+    const sortOrders = [].concat(req.body.sortOrder || []);
+    const entries = pathIds.map((pathId, index) => ({
+      pathId: String(pathId),
+      sortOrder: sortOrders[index],
+    }));
+    await services.siteService.setSortOrders(entries);
     res.redirect(303, '/_pagedock/?status=updated');
   });
 

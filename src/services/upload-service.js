@@ -5,6 +5,7 @@ import path from 'node:path';
 import { AppError, ConflictError } from '../errors.js';
 import { assertValidPathId } from '../utils/path-id.js';
 import {
+  DEFAULT_SORT_ORDER,
   normalizeDescription,
   normalizeTitle,
   normalizeVersion,
@@ -141,8 +142,8 @@ export function createUploadService(config, siteService) {
     let enabled = true;
     // The sort order is only ever set from the admin table, never here — an
     // upload (including replacing a page's file) always keeps whatever sort
-    // order the page already had, and a brand new page has none.
-    let sortOrder = null;
+    // order the page already had, and a brand new page gets the default.
+    let sortOrder = DEFAULT_SORT_ORDER;
     let promoted = false;
 
     if (overwrite && (await siteService.exists(pathId))) {
@@ -215,11 +216,11 @@ export function createUploadService(config, siteService) {
 
 export { ACCEPTED_MIME_TYPES };
 export {
+  DEFAULT_SORT_ORDER,
   MAX_DESCRIPTION_LENGTH,
   MAX_SORT_ORDER,
   MAX_TITLE_LENGTH,
   MAX_VERSION_LENGTH,
-  MIN_SORT_ORDER,
   normalizeDescription,
   normalizeSortOrder,
   normalizeTitle,

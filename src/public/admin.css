@@ -584,25 +584,12 @@ th {
   opacity: 0.68;
 }
 
-.site-order-cell form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
 .site-order-input {
   width: 100%;
   margin-top: 0;
   padding: 0.4rem 0.5rem;
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums lining-nums;
-}
-
-.site-order-cell button {
-  width: 100%;
-  min-height: 2.2rem;
-  padding: 0.45rem 0.55rem;
-  font-size: 0.75rem;
 }
 
 /* ---------- Catalog intro ---------- */

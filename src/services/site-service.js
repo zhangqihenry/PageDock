@@ -82,11 +82,7 @@ async function describeSite(pathId, root) {
     uploadedAt: metadata?.uploadedAt || stats.mtime.toISOString(),
     sizeBytes,
     enabled: metadata?.enabled !== false,
-    sortOrder:
-      typeof metadata?.sortOrder === 'number' &&
-      Number.isFinite(metadata.sortOrder)
-        ? metadata.sortOrder
-        : null,
+    sortOrder: normalizeSortOrder(metadata?.sortOrder),
   };
 }
 
@@ -152,15 +148,8 @@ export function createSiteService(config) {
     }
 
     sites.sort((left, right) => {
-      const leftHasOrder = typeof left.sortOrder === 'number';
-      const rightHasOrder = typeof right.sortOrder === 'number';
-
-      if (leftHasOrder && rightHasOrder && left.sortOrder !== right.sortOrder) {
+      if (left.sortOrder !== right.sortOrder) {
         return right.sortOrder - left.sortOrder;
-      }
-      if (leftHasOrder !== rightHasOrder) {
-        // Pages with a sort order are always shown above pages without one.
-        return leftHasOrder ? -1 : 1;
       }
       return right.uploadedAt.localeCompare(left.uploadedAt);
     });
@@ -233,6 +222,19 @@ export function createSiteService(config) {
     return metadata;
   }
 
+  // Saves every row of the admin table's sort-order column in one go.
+  // Entries for a pathId that no longer exists (e.g. deleted in another
+  // tab before this save) are skipped rather than failing the whole batch.
+  async function setSortOrders(entries) {
+    for (const entry of entries) {
+      const pathId = String(entry?.pathId || '');
+      if (!isValidPathId(pathId) || !(await exists(pathId))) {
+        continue;
+      }
+      await setSortOrder(pathId, entry.sortOrder);
+    }
+  }
+
   async function setEnabled(pathId, enabled) {
     const root = siteRoot(pathId);
     if (!(await exists(pathId))) {
@@ -276,6 +278,7 @@ export function createSiteService(config) {
     update,
     setEnabled,
     setSortOrder,
+    setSortOrders,
     remove,
     siteRoot,
     directorySize,
