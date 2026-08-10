@@ -1,5 +1,11 @@
 # Changelog / 更新日志
 
+## v0.8.3 — 2026-08-11
+
+**EN:** Fixed the admin table's row divider lines appearing broken/stepped around the actions column on rows shorter than their button grid. The 2x2 button layout now lives on an inner wrapper instead of the table cell itself, so every cell in a row shares the same border position again.
+
+**中文：** 修复了管理后台表格中，行高小于按钮网格高度时，操作列附近的行分隔线会显示断开/错位的问题。四个按钮的 2×2 布局现在放在单元格内部的一层容器上，不再直接设在表格单元格本身，这样同一行的所有列边框会正常对齐。
+
 ## v0.8.2 — 2026-08-11
 
 **EN:** Moved the "Save order" button out of the panel heading to its own row directly under the sort-order column, sized to match the number input, and switched it from the solid accent style to the same plain button style used elsewhere in the table.
