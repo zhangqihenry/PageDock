@@ -1,5 +1,11 @@
 # Changelog / 更新日志
 
+## v0.8.2 — 2026-08-11
+
+**EN:** Moved the "Save order" button out of the panel heading to its own row directly under the sort-order column, sized to match the number input, and switched it from the solid accent style to the same plain button style used elsewhere in the table.
+
+**中文：** 「保存排序」按钮从表格标题栏移到了排序数字列下方单独一行，大小与排序输入框一致，并且从红色实心按钮改成了和表格里其他按钮一样的普通样式。
+
 ## v0.8.1 — 2026-08-11
 
 **EN:** The sort-order column in the admin table now saves all rows at once with a single "Save order" button, instead of a save button per row. The number field no longer shows a hint text that could get cut off — a blank field simply defaults to 0, and a decimal, a negative number, or non-numeric text is silently treated as 0 as well.
