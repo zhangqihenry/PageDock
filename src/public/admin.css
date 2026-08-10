@@ -526,18 +526,21 @@ th {
   letter-spacing: 0.06em;
 }
 
-.actions {
+/* The grid lives on this inner wrapper rather than the <td> itself —
+   display: grid directly on a table cell stops it from stretching to the
+   row's shared height in some browsers, which breaks the row's border. */
+.actions-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
-.actions form {
+.actions-grid form {
   margin: 0;
 }
 
-.actions .btn,
-.actions button {
+.actions-grid .btn,
+.actions-grid button {
   width: 100%;
   min-height: 2.2rem;
   padding: 0.45rem 0.55rem;

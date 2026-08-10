@@ -163,25 +163,27 @@
                       >
                     </td>
                     <td class="actions">
-                      <% if (site.enabled) { %>
-                        <a class="btn" href="/<%= site.pathId %>/" target="_blank" rel="noopener">
-                          <%= t('table.open') %>
+                      <div class="actions-grid">
+                        <% if (site.enabled) { %>
+                          <a class="btn" href="/<%= site.pathId %>/" target="_blank" rel="noopener">
+                            <%= t('table.open') %>
+                          </a>
+                        <% } else { %>
+                          <span class="btn btn-disabled" aria-disabled="true"><%= t('table.open') %></span>
+                        <% } %>
+                        <a class="btn" href="/_pagedock/sites/<%= site.pathId %>/edit">
+                          <%= t('table.edit') %>
                         </a>
-                      <% } else { %>
-                        <span class="btn btn-disabled" aria-disabled="true"><%= t('table.open') %></span>
-                      <% } %>
-                      <a class="btn" href="/_pagedock/sites/<%= site.pathId %>/edit">
-                        <%= t('table.edit') %>
-                      </a>
-                      <form action="/_pagedock/sites/<%= site.pathId %>/visibility" method="post">
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <input type="hidden" name="enabled" value="<%= site.enabled ? 'false' : 'true' %>">
-                        <button type="submit"><%= t(site.enabled ? 'table.disable' : 'table.enable') %></button>
-                      </form>
-                      <form action="/_pagedock/sites/<%= site.pathId %>/delete" method="post">
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <button class="btn-danger" type="submit"><%= t('table.delete') %></button>
-                      </form>
+                        <form action="/_pagedock/sites/<%= site.pathId %>/visibility" method="post">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <input type="hidden" name="enabled" value="<%= site.enabled ? 'false' : 'true' %>">
+                          <button type="submit"><%= t(site.enabled ? 'table.disable' : 'table.enable') %></button>
+                        </form>
+                        <form action="/_pagedock/sites/<%= site.pathId %>/delete" method="post">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <button class="btn-danger" type="submit"><%= t('table.delete') %></button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 <% } %>
