@@ -76,6 +76,16 @@
               placeholder="<%= t('form.versionPlaceholder') %>"
             >
           </label>
+          <label>
+            <%= t('form.sortOrderLabel') %>
+            <input
+              name="sortOrder"
+              type="number"
+              step="1"
+              inputmode="numeric"
+              placeholder="<%= t('form.sortOrderPlaceholder') %>"
+            >
+          </label>
           <label class="field-wide">
             <%= t('common.description') %>
             <textarea
@@ -142,6 +152,9 @@
                       <span><%= site.version || t('common.noVersion') %></span>
                       <span><%= site.formattedDate %></span>
                       <span><%= site.formattedSize %></span>
+                      <span>
+                        <%= site.sortOrder === null ? t('table.noSortOrder') : t('table.sortOrder') + ' ' + site.sortOrder %>
+                      </span>
                     </td>
                     <td class="actions">
                       <% if (site.enabled) { %>

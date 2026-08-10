@@ -3,6 +3,8 @@ import { AppError } from '../errors.js';
 export const MAX_DESCRIPTION_LENGTH = 300;
 export const MAX_TITLE_LENGTH = 100;
 export const MAX_VERSION_LENGTH = 40;
+export const MIN_SORT_ORDER = -999999;
+export const MAX_SORT_ORDER = 999999;
 
 export function normalizeDescription(value) {
   const description = String(value || '')
@@ -46,4 +48,32 @@ export function normalizeVersion(value) {
     );
   }
   return version;
+}
+
+// Returns an integer, or null when no sort order was provided. Pages with a
+// sort order are shown above pages without one, ordered by that number from
+// high to low; pages without one fall back to most-recently-uploaded first.
+export function normalizeSortOrder(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) {
+    return null;
+  }
+
+  if (!/^-?\d+$/.test(raw)) {
+    throw new AppError('排序数字必须是整数。', 400, 'SORT_ORDER_INVALID');
+  }
+
+  const sortOrder = Number(raw);
+  if (
+    !Number.isSafeInteger(sortOrder) ||
+    sortOrder < MIN_SORT_ORDER ||
+    sortOrder > MAX_SORT_ORDER
+  ) {
+    throw new AppError(
+      `排序数字必须在 ${MIN_SORT_ORDER} 到 ${MAX_SORT_ORDER} 之间。`,
+      400,
+      'SORT_ORDER_INVALID',
+    );
+  }
+  return sortOrder;
 }

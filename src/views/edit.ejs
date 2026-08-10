@@ -60,6 +60,17 @@
             >
           </label>
           <label>
+            <%= t('form.sortOrderLabel') %>
+            <input
+              name="sortOrder"
+              type="number"
+              step="1"
+              inputmode="numeric"
+              value="<%= site.sortOrder === null ? '' : site.sortOrder %>"
+              placeholder="<%= t('form.sortOrderPlaceholder') %>"
+            >
+          </label>
+          <label>
             <%= t('common.description') %>
             <textarea
               name="description"

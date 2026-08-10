@@ -84,6 +84,7 @@ export function createAdminRouter(config, services) {
       title: String(req.body.title || ''),
       description: String(req.body.description || ''),
       version: String(req.body.version || ''),
+      sortOrder: String(req.body.sortOrder || ''),
       file: req.file,
       overwrite: req.body.overwrite === 'true',
     });
@@ -111,6 +112,7 @@ export function createAdminRouter(config, services) {
     const title = String(req.body.title || '');
     const description = String(req.body.description || '');
     const version = String(req.body.version || '');
+    const sortOrder = String(req.body.sortOrder || '');
 
     if (req.file) {
       await services.uploadSite({
@@ -118,6 +120,7 @@ export function createAdminRouter(config, services) {
         title,
         description,
         version,
+        sortOrder,
         file: req.file,
         overwrite: true,
       });
@@ -126,6 +129,7 @@ export function createAdminRouter(config, services) {
         title,
         description,
         version,
+        sortOrder,
       });
     }
     res.redirect(303, '/_pagedock/?status=updated');

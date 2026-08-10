@@ -4,6 +4,7 @@ import { AppError } from '../errors.js';
 import { assertValidPathId, isValidPathId } from '../utils/path-id.js';
 import {
   normalizeDescription,
+  normalizeSortOrder,
   normalizeTitle,
   normalizeVersion,
 } from '../utils/metadata-fields.js';
@@ -81,6 +82,11 @@ async function describeSite(pathId, root) {
     uploadedAt: metadata?.uploadedAt || stats.mtime.toISOString(),
     sizeBytes,
     enabled: metadata?.enabled !== false,
+    sortOrder:
+      typeof metadata?.sortOrder === 'number' &&
+      Number.isFinite(metadata.sortOrder)
+        ? metadata.sortOrder
+        : null,
   };
 }
 
@@ -145,9 +151,19 @@ export function createSiteService(config) {
       }
     }
 
-    sites.sort((left, right) =>
-      right.uploadedAt.localeCompare(left.uploadedAt),
-    );
+    sites.sort((left, right) => {
+      const leftHasOrder = typeof left.sortOrder === 'number';
+      const rightHasOrder = typeof right.sortOrder === 'number';
+
+      if (leftHasOrder && rightHasOrder && left.sortOrder !== right.sortOrder) {
+        return right.sortOrder - left.sortOrder;
+      }
+      if (leftHasOrder !== rightHasOrder) {
+        // Pages with a sort order are always shown above pages without one.
+        return leftHasOrder ? -1 : 1;
+      }
+      return right.uploadedAt.localeCompare(left.uploadedAt);
+    });
     return sites;
   }
 
@@ -159,7 +175,7 @@ export function createSiteService(config) {
     return describeSite(pathId, root);
   }
 
-  async function update(pathId, { title, description, version }) {
+  async function update(pathId, { title, description, version, sortOrder }) {
     const root = siteRoot(pathId);
     if (!(await exists(pathId))) {
       throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
@@ -168,6 +184,7 @@ export function createSiteService(config) {
     const normalizedTitle = normalizeTitle(title);
     const normalizedDescription = normalizeDescription(description);
     const normalizedVersion = normalizeVersion(version);
+    const normalizedSortOrder = normalizeSortOrder(sortOrder);
 
     const [existingMetadata, stats, sizeBytes] = await Promise.all([
       readMetadata(root),
@@ -182,6 +199,7 @@ export function createSiteService(config) {
       title: normalizedTitle,
       description: normalizedDescription,
       version: normalizedVersion,
+      sortOrder: normalizedSortOrder,
       uploadedAt: existingMetadata?.uploadedAt || stats.mtime.toISOString(),
       sizeBytes,
     };
@@ -206,6 +224,7 @@ export function createSiteService(config) {
       title: site.title,
       description: site.description,
       version: site.version,
+      sortOrder: site.sortOrder,
       uploadedAt: site.uploadedAt,
       sizeBytes: site.sizeBytes,
       enabled: Boolean(enabled),

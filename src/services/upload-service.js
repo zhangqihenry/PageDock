@@ -6,6 +6,7 @@ import { AppError, ConflictError } from '../errors.js';
 import { assertValidPathId } from '../utils/path-id.js';
 import {
   normalizeDescription,
+  normalizeSortOrder,
   normalizeTitle,
   normalizeVersion,
 } from '../utils/metadata-fields.js';
@@ -64,6 +65,7 @@ async function writeMetadata(
   title,
   description,
   version,
+  sortOrder,
   sizeBytes,
   enabled,
 ) {
@@ -73,6 +75,7 @@ async function writeMetadata(
     title,
     description,
     version,
+    sortOrder,
     uploadedAt: new Date().toISOString(),
     sizeBytes,
     enabled,
@@ -123,6 +126,7 @@ export function createUploadService(config, siteService) {
     title,
     description,
     version,
+    sortOrder,
     file,
     overwrite = false,
   }) {
@@ -130,6 +134,7 @@ export function createUploadService(config, siteService) {
     const normalizedTitle = normalizeTitle(title);
     const normalizedDescription = normalizeDescription(description);
     const normalizedVersion = normalizeVersion(version);
+    const normalizedSortOrder = normalizeSortOrder(sortOrder);
     const extension = validateUploadFile(file);
     const stagingRoot = path.join(
       config.stagingDir,
@@ -189,6 +194,7 @@ export function createUploadService(config, siteService) {
         normalizedTitle,
         normalizedDescription,
         normalizedVersion,
+        normalizedSortOrder,
         sizeBytes,
         enabled,
       );
@@ -207,9 +213,12 @@ export function createUploadService(config, siteService) {
 export { ACCEPTED_MIME_TYPES };
 export {
   MAX_DESCRIPTION_LENGTH,
+  MAX_SORT_ORDER,
   MAX_TITLE_LENGTH,
   MAX_VERSION_LENGTH,
+  MIN_SORT_ORDER,
   normalizeDescription,
+  normalizeSortOrder,
   normalizeTitle,
   normalizeVersion,
 } from '../utils/metadata-fields.js';
