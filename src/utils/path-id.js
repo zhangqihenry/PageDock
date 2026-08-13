@@ -1,7 +1,10 @@
 import { AppError } from '../errors.js';
 
 export const PATH_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
-export const RESERVED_PATH_IDS = new Set(['_pagedock']);
+// "assets" is reserved because the built frontend's static assets are
+// served at /assets/*; letting an uploaded site claim that path would risk
+// colliding with the app shell's own JS/CSS/image files.
+export const RESERVED_PATH_IDS = new Set(['_pagedock', 'assets']);
 
 export function isValidPathId(value) {
   return (

@@ -117,7 +117,6 @@ export function loadConfig(env = process.env) {
       nodeEnv === 'production',
     ),
     trustProxy: parseTrustProxy(env.TRUST_PROXY),
-    adminHost: (env.ADMIN_HOST || '').trim().toLowerCase(),
   });
 }
 

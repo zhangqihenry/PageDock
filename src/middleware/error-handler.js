@@ -1,52 +1,45 @@
 import multer from 'multer';
 import { AppError } from '../errors.js';
 
-function extractNumber(message) {
+// Every AppError message that carries a numeric limit (e.g. "cannot exceed
+// 300 characters") gets that number pulled out as `params.n`, so the
+// frontend's i18n dictionary can interpolate it into the localized string
+// without the backend needing to know the viewer's language.
+function extractParams(message) {
   const match = /(\d+)/.exec(message || '');
-  return match ? match[1] : '';
+  return match ? { n: match[1] } : {};
 }
 
-export function notFoundHandler(req, res) {
-  const t = res.locals.t;
-  res.status(404).render('404', {
-    title: t('notFound.title'),
-    message: t('notFound.message'),
-  });
+export function notFoundHandler(_req, res) {
+  res.status(404).json({ error: 'Not found', code: 'NOT_FOUND', params: {} });
 }
 
-export function errorHandler(error, req, res, _next) {
-  const t = res.locals.t;
-  let status = error.status || 500;
-  let message = error.message || t('error.generic500');
-
-  if (error instanceof multer.MulterError) {
-    status = 400;
-    message =
-      error.code === 'LIMIT_FILE_SIZE'
-        ? t('error.multerFileSize')
-        : t('error.multerGeneric', { detail: error.message });
-  } else if (error instanceof AppError && error.code) {
-    const key = `errorCode.${error.code}`;
-    const translated = t(key, { n: extractNumber(error.message) });
-    message = translated === key ? error.message : translated;
-  } else if (status >= 500) {
-    console.error(error);
-    message = t('error.generic500');
-  }
-
+export function errorHandler(error, _req, res, _next) {
   if (res.headersSent) {
     return;
   }
 
-  if (req.accepts('html')) {
-    res.status(status).render('error', {
-      title: status === 409 ? t('error.conflictTitle') : t('error.failureTitle'),
-      status,
-      message,
-      backUrl: '/_pagedock/',
-    });
-    return;
+  let status = error.status || 500;
+  let code = 'APP_ERROR';
+  let message = error.message || 'A server error occurred.';
+  let params = {};
+
+  if (error instanceof multer.MulterError) {
+    status = 400;
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      code = 'UPLOAD_TOO_LARGE';
+    } else {
+      code = 'UPLOAD_ERROR';
+      params = { detail: error.message };
+    }
+    message = error.message;
+  } else if (error instanceof AppError) {
+    code = error.code;
+    params = extractParams(error.message);
+  } else if (status >= 500) {
+    console.error(error);
+    message = 'A server error occurred. Please try again later.';
   }
 
-  res.status(status).json({ error: message });
+  res.status(status).json({ error: message, code, params });
 }

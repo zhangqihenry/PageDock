@@ -6,29 +6,33 @@ import session from 'express-session';
 import helmet from 'helmet';
 import createMemoryStore from 'memorystore';
 import { loadConfig } from './config.js';
-import {
-  errorHandler,
-  notFoundHandler,
-} from './middleware/error-handler.js';
-import { createAdminHostMiddleware } from './middleware/admin-host.js';
-import { createLocaleMiddleware } from './middleware/locale.js';
+import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { exposeCsrfToken } from './middleware/csrf.js';
-import { createAdminRouter } from './routes/admin.js';
-import { createAuthRouter } from './routes/auth.js';
+import { createSpaShellMiddleware } from './middleware/spa-shell.js';
+import { createCatalogRouter } from './routes/api/catalog.js';
+import { createAuthApiRouter } from './routes/api/auth.js';
+import { createAdminSitesRouter } from './routes/api/admin-sites.js';
+import { createAdminSettingsRouter } from './routes/api/admin-settings.js';
 import { createSiteDispatcher } from './routes/site-dispatcher.js';
 import {
   dynamicTools as defaultDynamicTools,
   registerDynamicTools,
 } from './routes/tools/index.js';
 import { createSiteService } from './services/site-service.js';
+import { createSettingsService } from './services/settings-service.js';
 import { createUploadService } from './services/upload-service.js';
-import { formatUploadedAt } from './utils/date.js';
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 const { version: packageVersion } = JSON.parse(
   readFileSync(path.join(currentDirectory, '..', 'package.json'), 'utf8'),
 );
+const frontendDistDir = path.join(currentDirectory, '..', 'frontend', 'dist');
 
+// Applied only to PageDock's own surface — the public catalog data, the
+// /_pagedock/api JSON endpoints, and the SPA shell fallback — never to
+// uploaded site content or dynamic tool routes, which may rely on looser
+// headers than helmet's secure defaults allow (inline scripts, cross-origin
+// resources, etc.).
 function managementSecurityOptions(config) {
   return {
     contentSecurityPolicy: {
@@ -53,46 +57,35 @@ export async function createApp(options = {}) {
   const MemoryStore = createMemoryStore(session);
   const siteService = createSiteService(config);
   await siteService.initialize();
+  const settingsService = createSettingsService(config);
   const uploadSite = createUploadService(config, siteService);
 
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
-  app.set('view engine', 'ejs');
-  app.set('views', path.join(currentDirectory, 'views'));
   app.locals.assetVersion = packageVersion;
 
-  app.use(createLocaleMiddleware(config));
-
+  // Built frontend static assets (hashed JS/CSS/images under /assets/*,
+  // plus the favicon/logo). Stateless and public, so it's served ahead of
+  // session() with no exposure beyond the one header set manually here.
   app.use(
-    '/_pagedock/assets',
-    express.static(path.join(currentDirectory, 'public'), {
+    express.static(frontendDistDir, {
+      index: false,
       dotfiles: 'ignore',
-      fallthrough: false,
-      maxAge: config.isProduction ? '1h' : 0,
+      maxAge: config.isProduction ? '1y' : 0,
       setHeaders(res) {
         res.setHeader('X-Content-Type-Options', 'nosniff');
       },
     }),
   );
 
-  app.get(
-    '/',
+  // Public, unauthenticated catalog data — mirrors today's unguarded `/`.
+  app.use(
+    '/_pagedock/api/catalog',
     helmet(managementSecurityOptions(config)),
-    async (req, res) => {
-      const sites = await siteService.list();
-      const adminUrl = config.adminHost
-        ? `${config.cookieSecure ? 'https' : req.protocol}://${config.adminHost}/_pagedock/`
-        : '/_pagedock/';
-
-      res.render('catalog', {
-        title: res.locals.t('catalog.title'),
-        sites: sites.map((site) => ({
-          ...site,
-          formattedDate: formatUploadedAt(site.uploadedAt),
-        })),
-        adminUrl,
-      });
-    },
+    createCatalogRouter(
+      { siteService, settingsService },
+      { version: packageVersion },
+    ),
   );
 
   app.get('/_pagedock/health', (_req, res) => {
@@ -119,22 +112,20 @@ export async function createApp(options = {}) {
     }),
   );
 
-  const adminHost = createAdminHostMiddleware(config.adminHost);
-  app.use('/_pagedock', adminHost);
+  app.use('/_pagedock/api', helmet(managementSecurityOptions(config)));
+  app.use('/_pagedock/api', express.json({ limit: '32kb' }));
+  app.use('/_pagedock/api', exposeCsrfToken);
+  app.use('/_pagedock/api/auth', createAuthApiRouter(config));
   app.use(
-    '/_pagedock',
-    helmet(managementSecurityOptions(config)),
+    '/_pagedock/api/admin/sites',
+    createAdminSitesRouter(config, { siteService, uploadSite }),
   );
   app.use(
-    '/_pagedock',
-    express.urlencoded({ extended: false, limit: '32kb' }),
+    '/_pagedock/api/admin/settings',
+    createAdminSettingsRouter({ settingsService }),
   );
-  app.use('/_pagedock', exposeCsrfToken);
-  app.use('/_pagedock', createAuthRouter(config));
-  app.use(
-    '/_pagedock',
-    createAdminRouter(config, { siteService, uploadSite }),
-  );
+  // Anything else under /_pagedock/api is an unknown JSON endpoint.
+  app.use('/_pagedock/api', notFoundHandler);
 
   registerDynamicTools(
     app,
@@ -148,10 +139,17 @@ export async function createApp(options = {}) {
   );
 
   app.use(createSiteDispatcher(siteService));
-  app.use(notFoundHandler);
+
+  // Anything that reaches this point is neither a static asset, a JSON API
+  // route, a dynamic tool route, nor a published site — serve the SPA shell
+  // and let Vue Router decide client-side whether it's Home, Admin, or a
+  // "not found" view.
+  app.use(helmet(managementSecurityOptions(config)));
+  app.use(createSpaShellMiddleware(frontendDistDir));
+
   app.use(errorHandler);
 
   app.locals.config = config;
-  app.locals.services = { siteService, uploadSite };
+  app.locals.services = { siteService, settingsService, uploadSite };
   return app;
 }
