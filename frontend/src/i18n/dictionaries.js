@@ -28,11 +28,22 @@ const dictionaries = {
     'common.save': '保存',
     'common.cancel': '取消',
 
+    'catalog.tally': ({ count }) => `共 ${count} 个网页`,
+    'catalog.empty': '目录暂时为空，点击右上角「后台管理」发布第一个网页。',
+    'catalog.listLabel': '已发布网页',
+    'catalog.open': '打开 →',
+
     'notFound.title': '页面不存在',
     'notFound.message': '请求的页面或网页不存在。',
     'notFound.backLink': '返回网页目录',
 
     'error.generic': '发生未知错误，请稍后重试。',
+
+    'login.title': '登录',
+    'login.subtitle': '登录后上传和管理网页。',
+    'login.usernameLabel': '管理员账号',
+    'login.passwordLabel': '管理员密码',
+    'login.submit': '登录',
 
     'errorCode.INVALID_CSRF': '请求校验失败，请刷新页面后重试。',
     'errorCode.NO_FILE': '请选择要上传的 HTML 或 ZIP 文件。',
@@ -92,11 +103,22 @@ const dictionaries = {
     'common.save': 'Save',
     'common.cancel': 'Cancel',
 
+    'catalog.tally': ({ count }) => `${count} page${count === 1 ? '' : 's'} total`,
+    'catalog.empty': 'The catalog is empty. Click "Admin" in the top right to publish the first one.',
+    'catalog.listLabel': 'Published web pages',
+    'catalog.open': 'Open →',
+
     'notFound.title': 'Page Not Found',
     'notFound.message': 'The requested page or web page does not exist.',
     'notFound.backLink': 'Back to catalog',
 
     'error.generic': 'Something went wrong. Please try again later.',
+
+    'login.title': 'Log In',
+    'login.subtitle': 'Log in to upload and manage pages.',
+    'login.usernameLabel': 'Admin username',
+    'login.passwordLabel': 'Admin password',
+    'login.submit': 'Log in',
 
     'errorCode.INVALID_CSRF': 'Request validation failed. Please refresh the page and try again.',
     'errorCode.NO_FILE': 'Please choose an HTML file or a ZIP archive to upload.',

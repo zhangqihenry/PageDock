@@ -1,23 +1,32 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
+import { useLocaleStore } from '../stores/locale.js';
 
-// Placeholder wiring for Phase 3 — proves the auth store/session check
-// works end to end. The real tabbed layout (Sites/Upload/Settings) and the
-// login modal land in the next phases.
+// Login has no route of its own — it's a modal on the homepage. Landing
+// here signed out redirects back to `/` and opens that modal, remembering
+// to bounce back here once login succeeds.
 const auth = useAuthStore();
-const checking = ref(true);
+const locale = useLocaleStore();
+const router = useRouter();
 
-onMounted(async () => {
-  await auth.fetchSession();
-  checking.value = false;
-});
+function guard() {
+  if (auth.ready && !auth.authenticated) {
+    auth.openLoginModal('/_pagedock');
+    router.replace('/');
+  }
+}
+
+onMounted(guard);
+watch(() => auth.ready, guard);
 </script>
 
 <template>
-  <main>
-    <p v-if="checking">…</p>
-    <p v-else-if="!auth.authenticated">未登录（登录弹窗还没做，下一阶段补上）。</p>
-    <p v-else>已登录 — 后台管理选项卡还没做，下一阶段补上。</p>
+  <main class="wrap">
+    <p v-if="!auth.ready" class="muted">{{ locale.t('common.loading') }}</p>
+    <p v-else-if="auth.authenticated">
+      已登录 — 后台管理选项卡还没做，下一阶段补上。
+    </p>
   </main>
 </template>

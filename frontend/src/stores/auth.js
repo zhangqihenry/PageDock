@@ -8,8 +8,21 @@ export const useAuthStore = defineStore('auth', {
     // Whether fetchSession() has resolved at least once — lets callers
     // avoid flashing a "please log in" state before the first check lands.
     ready: false,
+    // Login is a modal on the homepage, not a route — this is the shared
+    // open/close + "where to go after a successful login" state for it.
+    loginModalOpen: false,
+    postLoginRedirect: '/',
   }),
   actions: {
+    openLoginModal(redirectTo = '/') {
+      this.postLoginRedirect = redirectTo;
+      this.loginModalOpen = true;
+    },
+
+    closeLoginModal() {
+      this.loginModalOpen = false;
+    },
+
     async fetchSession() {
       const data = await api.get('/auth/session');
       this.authenticated = data.authenticated;

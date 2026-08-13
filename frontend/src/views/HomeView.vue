@@ -2,32 +2,61 @@
 import { onMounted } from 'vue';
 import { useCatalogStore } from '../stores/catalog.js';
 import { useLocaleStore } from '../stores/locale.js';
+import { formatUploadedAt } from '../utils/format.js';
 
-// Placeholder wiring for Phase 3 — proves the catalog store/API round trip
-// works end to end. The real Blog-style layout (hero title/subtitle, login
-// modal, header) lands in the next phase.
 const catalog = useCatalogStore();
 const locale = useLocaleStore();
 
 onMounted(() => {
-  catalog.fetch();
+  if (!catalog.loaded) {
+    catalog.fetch();
+  }
 });
 </script>
 
 <template>
-  <main>
-    <p v-if="!catalog.loaded">{{ locale.t('common.loading') }}</p>
-    <template v-else>
-      <h1>{{ catalog.settings.title }}</h1>
-      <p>{{ catalog.settings.subtitle }}</p>
-      <p>{{ catalog.sites.length }}</p>
-      <ul>
-        <li v-for="site in catalog.sites" :key="site.pathId">
-          <a :href="`/${site.pathId}/`" target="_blank" rel="noopener">
-            {{ site.title }}
-          </a>
-        </li>
-      </ul>
+  <main class="wrap">
+    <template v-if="catalog.loaded">
+      <section class="intro">
+        <h1>{{ catalog.settings.title }}</h1>
+        <p class="lede">{{ catalog.settings.subtitle }}</p>
+        <p class="tally">
+          {{ locale.t('catalog.tally', { count: catalog.sites.length }) }}
+        </p>
+      </section>
+
+      <section v-if="catalog.sites.length === 0" class="empty">
+        <p>{{ locale.t('catalog.empty') }}</p>
+      </section>
+
+      <section v-else class="list" :aria-label="locale.t('catalog.listLabel')">
+        <a
+          v-for="(site, index) in catalog.sites"
+          :key="site.pathId"
+          class="row"
+          :href="`/${site.pathId}/`"
+          target="_blank"
+          rel="noopener"
+        >
+          <span class="row-index">{{ String(index + 1).padStart(2, '0') }}</span>
+          <span class="row-main">
+            <span class="row-title">{{ site.title }}</span>
+            <span class="row-desc">{{
+              site.description || locale.t('common.noDescription')
+            }}</span>
+            <span class="row-meta">
+              <span v-if="site.version" class="mono">{{
+                locale.t('common.versionTag', { version: site.version })
+              }}</span>
+              <span>{{ formatUploadedAt(site.uploadedAt) }}</span>
+            </span>
+          </span>
+          <span class="row-path mono">/{{ site.pathId }}/</span>
+          <span class="row-open">{{ locale.t('catalog.open') }}</span>
+        </a>
+      </section>
     </template>
+
+    <p v-else class="muted">{{ locale.t('common.loading') }}</p>
   </main>
 </template>
