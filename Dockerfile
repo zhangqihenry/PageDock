@@ -1,3 +1,17 @@
+# ---- Builder: install all workspaces (incl. dev deps) and build the Vue frontend ----
+FROM node:24-alpine AS builder
+WORKDIR /app
+
+# Manifests only first, so this layer only re-runs when dependencies change,
+# not on every frontend source edit.
+COPY package.json package-lock.json ./
+COPY frontend/package.json ./frontend/package.json
+RUN npm ci
+
+COPY frontend ./frontend
+RUN npm run build
+
+# ---- Runtime: production Node deps + the built frontend + server source ----
 FROM node:24-alpine
 
 ENV NODE_ENV=production
@@ -9,6 +23,7 @@ RUN npm ci --omit=dev \
     && apk add --no-cache su-exec
 
 COPY --chown=node:node src ./src
+COPY --from=builder --chown=node:node /app/frontend/dist ./frontend/dist
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN mkdir -p /data \
