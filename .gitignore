@@ -1,6 +1,12 @@
 node_modules/
 coverage/
 
+# Frontend (Vue3/Vite) build output and its own node_modules — generated
+# artifacts, not source. `npm run build` regenerates frontend/dist, and the
+# server serves the app straight out of it.
+frontend/dist/
+frontend/node_modules/
+
 # This project's automated test suite and its fixtures/helpers. Kept out of
 # the published repo on purpose — they only need to exist locally to run
 # `npm test`, not as part of what gets deployed.

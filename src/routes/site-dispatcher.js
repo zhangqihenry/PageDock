@@ -1,4 +1,5 @@
 import express from 'express';
+import { notFoundHandler } from '../middleware/error-handler.js';
 import { isValidPathId } from '../utils/path-id.js';
 
 function splitRequestUrl(requestUrl) {
@@ -76,7 +77,14 @@ export function createSiteDispatcher(siteService) {
     });
     staticMiddleware(parsed.pathId)(req, res, (error) => {
       req.url = originalUrl;
-      next(error);
+      if (error) {
+        next(error);
+        return;
+      }
+      // `parsed.pathId` is a real, published site — a missing file inside
+      // it is a genuine 404, not a path for the SPA shell's client-side
+      // router to consider (that catch-all is for paths outside any site).
+      notFoundHandler(req, res);
     });
   };
 }
