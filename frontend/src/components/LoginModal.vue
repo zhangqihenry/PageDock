@@ -3,7 +3,7 @@ import { nextTick, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useLocaleStore } from '../stores/locale.js';
-import { ApiError } from '../api/client.js';
+import { describeError } from '../utils/errors.js';
 
 const auth = useAuthStore();
 const locale = useLocaleStore();
@@ -42,10 +42,7 @@ async function submit() {
     auth.closeLoginModal();
     router.push(redirectTo);
   } catch (err) {
-    error.value =
-      err instanceof ApiError
-        ? locale.t(`errorCode.${err.code}`, err.params)
-        : locale.t('error.generic');
+    error.value = describeError(err, locale);
   } finally {
     submitting.value = false;
   }
