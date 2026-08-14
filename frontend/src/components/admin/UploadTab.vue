@@ -106,7 +106,7 @@ async function submit() {
         <input
           v-model="form.pathId"
           :placeholder="locale.t('form.pathPlaceholder')"
-          pattern="[A-Za-z0-9_-]{1,64}"
+          pattern="[A-Za-z0-9_\-]{1,64}"
           maxlength="64"
           required
         />

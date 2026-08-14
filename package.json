@@ -1,6 +1,6 @@
 {
   "name": "pagedock",
-  "version": "0.8.3",
+  "version": "0.9.0",
   "description": "A lightweight, self-hosted dock for sharing static web pages.",
   "type": "module",
   "main": "src/server.js",
@@ -11,7 +11,9 @@
     "start": "node src/server.js",
     "dev": "concurrently -k -n server,web -c blue,green \"node --watch src/server.js\" \"npm run dev --workspace frontend\"",
     "build": "npm run build --workspace frontend",
+    "pretest": "npm run build",
     "test": "node --test --test-concurrency=1",
+    "pretest:coverage": "npm run build",
     "test:coverage": "node --test --experimental-test-coverage --test-concurrency=1"
   },
   "engines": {

@@ -101,9 +101,9 @@ PageDock 不运行上传内容中的服务器端代码，也不是通用应用�
 
 | Path 路径 | Purpose 用途 |
 | --- | --- |
-| `/` | Public site directory 公开网页目录 |
-| `/_pagedock/login` | Admin login 管理员登录 |
-| `/_pagedock/` | Upload/admin page (redirects to login when signed out) 上传管理页面（未登录时转到登录页） |
+| `/` | Public site directory (a Vue single-page app) 公开网页目录（Vue 单页应用） |
+| `/_pagedock/` | Admin page — sign in from the login modal on the homepage when signed out 后台管理页面——未登录时通过首页的登录弹窗登录 |
+| `/_pagedock/api/*` | JSON API backing the homepage and admin page 支撑首页和后台的 JSON API |
 | `/_pagedock/health` | Container health check 容器健康检查 |
 | `/<site-path>/` | Site homepage 网页首页 |
 | `/<site-path>/<asset>` | Site static asset 网页静态资源 |
@@ -163,7 +163,6 @@ All of the following are set directly in the `environment` block of
 | `SESSION_TTL_HOURS` | No | `12` | How long a login session stays valid (hours) 登录状态有效时间（小时）|
 | `COOKIE_SECURE` | No | `false` | Set to `true` when served over HTTPS 通过 HTTPS 访问时应设为 `true` |
 | `TRUST_PROXY` | No | `1` | Reverse proxy hop count; the default is usually fine 反向代理层级，通常保持默认即可 |
-| `ADMIN_HOST` | No | empty | Optional — when set, the admin backend only responds on this hostname 可选，非空时后台只响应该主机名 |
 | `MAX_UPLOAD_MB` | No | `50` | Max size of a single uploaded file (MB) 单次上传文件大小上限（MB） |
 | `MAX_EXTRACTED_MB` | No | `200` | Max total size after ZIP extraction (MB) ZIP 实际解压总大小上限（MB） |
 | `MAX_ZIP_FILES` | No | `2000` | Max number of entries in a ZIP ZIP 最大条目数量|
@@ -224,10 +223,6 @@ Registry（`ghcr.io/zhangqihenry/pagedock`），所以不用把源码搬到 NAS 
          COOKIE_SECURE: "false"
          TRUST_PROXY: "1"
 
-         # Optional dedicated admin hostname, e.g. admin.example.com; leave
-         # empty for LAN testing.
-         ADMIN_HOST: ""
-
          MAX_UPLOAD_MB: "50"
          MAX_EXTRACTED_MB: "200"
          MAX_ZIP_FILES: "2000"
@@ -284,9 +279,6 @@ Registry（`ghcr.io/zhangqihenry/pagedock`），所以不用把源码搬到 NAS 
          # 接入 HTTPS 反向代理后改为 true，并重新创建容器。
          COOKIE_SECURE: "false"
          TRUST_PROXY: "1"
-
-         # 可选：填写独立的后台域名，例如 admin.example.com；局域网测试时留空。
-         ADMIN_HOST: ""
 
          MAX_UPLOAD_MB: "50"
          MAX_EXTRACTED_MB: "200"
@@ -433,6 +425,49 @@ tool's own router.
 
 动态 API 默认是公开端点；需要鉴权、请求限流或 CSRF 防护时，应在对应工具的
 Router 内按该工具的调用方式添加中间件。
+
+## Development / 开发
+
+The frontend (the catalog homepage and admin page) is a Vue 3 + Vite +
+Vue Router + Pinia single-page app under `frontend/`, run as an npm
+workspace alongside the Express backend under `src/`. Requires Node.js
+24+.
+
+前端（目录首页和后台管理页面）是 `frontend/` 目录下的 Vue 3 + Vite +
+Vue Router + Pinia 单页应用，作为 npm workspace 和 `src/` 下的 Express
+后端一起管理。需要 Node.js 24 及以上版本。
+
+```bash
+npm install
+npm run dev
+```
+
+`npm run dev` starts the Express API and the Vite dev server together
+(the latter proxies API calls to the former) — open the URL Vite
+prints, typically `http://localhost:5173`. You'll still need
+`ADMIN_USER`, `ADMIN_PASSWORD`, and `SESSION_SECRET` set in the
+environment (see Configuration above).
+
+`npm run dev` 会同时启动 Express API 和 Vite 开发服务器（后者会把 API
+请求代理到前者），打开 Vite 打印出的地址即可，通常是
+`http://localhost:5173`。同样需要在环境变量中设置好 `ADMIN_USER`、
+`ADMIN_PASSWORD`、`SESSION_SECRET`（见上面的"配置项"）。
+
+To build and run the production bundle locally instead:
+
+本地构建并运行生产版本：
+
+```bash
+npm run build
+npm start
+```
+
+`npm test` runs the backend test suite (`node --test`) and builds the
+frontend first automatically, since a few tests exercise the built SPA
+shell.
+
+`npm test` 运行后端测试套件（`node --test`），并会自动先构建一次前端——
+因为有几个测试用例会检查构建出的 SPA 壳体页面。
 
 ## License / 许可证
 
