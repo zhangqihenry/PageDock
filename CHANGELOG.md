@@ -1,10 +1,10 @@
 # Changelog / 更新日志
 
-## v0.9.0 — 2026-08-14
+## v1.0.0 — 2026-08-14
 
-**EN:** Rebuilt the frontend as a Vue 3 + Vite + Vue Router + Pinia single-page app; the server is now a JSON API plus static hosting instead of server-rendered EJS pages. The catalog homepage is styled like a blog index, with an admin-editable big title and subtitle above the page list (previously fixed text). The top-right "Upload page" button is now "Admin", which opens a tabbed admin page (Uploaded pages / Upload page / Site settings) instead of one long scrolling page. Logging in is now a modal on the homepage instead of a separate page. Removed the `ADMIN_HOST` option entirely — the admin backend no longer supports being restricted to a separate hostname.
+**EN:** The catalog homepage now has an admin-editable big title and subtitle, and a redesigned blog-style layout with a refreshed visual style across the whole site. The top-right button is now called "Admin" and opens a tabbed admin page with three tabs. Logging in now happens through a modal on the homepage. Removed the `ADMIN_HOST` configuration option.
 
-**中文：** 前端整体重写为 Vue 3 + Vite + Vue Router + Pinia 单页应用；服务端不再渲染 EJS 页面，改为纯 JSON API + 静态托管。首页目录改成了 Blog 风格，页面列表上方新增了可在后台自定义的大标题和小标题（原来是固定文案）。右上角「上传网页」按钮改名为「后台管理」，点击后打开的是选项卡式的后台页面（已上传网页 / 上传网页 / 网站设置），不再是一长条滚动页面。登录不再是独立页面，改成首页里的弹窗。彻底移除了 `ADMIN_HOST` 配置项，后台管理不再支持限定专属域名访问。
+**中文：** 网页目录首页现在可以在后台自定义大标题和小标题，采用了全新的 Blog 风格布局，全站视觉设计也做了翻新。右上角按钮改名为「后台管理」，点击后打开的后台管理页面分成了三个选项卡。登录改为通过首页弹窗完成。移除了 `ADMIN_HOST` 配置项。
 
 ## v0.8.3 — 2026-08-11
 
