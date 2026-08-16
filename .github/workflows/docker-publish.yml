@@ -8,7 +8,7 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/zhangqihenry/pagedock
-  DOCKERHUB_IMAGE_NAME: zhangqihenry/pagedock
+  DOCKERHUB_IMAGE_NAME: zhangqilq/pagedock
 
 jobs:
   build-and-push:
