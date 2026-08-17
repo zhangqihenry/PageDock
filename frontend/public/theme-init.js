@@ -68,8 +68,13 @@
 
   try {
     var storedColor = window.localStorage.getItem('pagedock-color-theme');
-    if (storedColor && Object.prototype.hasOwnProperty.call(HUES, storedColor)) {
-      applyPalette(HUES[storedColor], mode);
+    // A visitor who's never touched this setting has no stored value at
+    // all — that's the "indigo" default, not the plain black/white look.
+    // An explicitly-stored 'default' (not a HUES key) still falls through
+    // and applies nothing, correctly leaving the plain look in place.
+    var effectiveColor = storedColor || 'indigo';
+    if (Object.prototype.hasOwnProperty.call(HUES, effectiveColor)) {
+      applyPalette(HUES[effectiveColor], mode);
     }
   } catch (err) {
     /* localStorage unavailable — fall back to the default color theme */

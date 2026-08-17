@@ -6,8 +6,12 @@ const STORAGE_KEY = 'pagedock-color-theme';
 // 'default' is the original neutral black/white/red look and needs no
 // inline overrides — every other id applies computePalette()'s tokens
 // directly on <html>.style. Order here is also the order the swatches
-// render in.
+// render in. A visitor who's never touched this setting starts on
+// DEFAULT_COLOR_THEME, not literally 'default' — it's just the first
+// choice, still fully overridable (including explicitly picking 'default'
+// itself) from the swatch row.
 export const COLOR_THEMES = ['default', ...COLOR_THEME_HUES.map((entry) => entry.id)];
+export const DEFAULT_COLOR_THEME = 'indigo';
 
 function currentMode() {
   return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
@@ -16,9 +20,9 @@ function currentMode() {
 function readStoredId() {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    return COLOR_THEMES.includes(stored) ? stored : 'default';
+    return COLOR_THEMES.includes(stored) ? stored : DEFAULT_COLOR_THEME;
   } catch {
-    return 'default';
+    return DEFAULT_COLOR_THEME;
   }
 }
 
@@ -50,7 +54,7 @@ export const useColorThemeStore = defineStore('colorTheme', {
   }),
   actions: {
     setTheme(id) {
-      this.theme = COLOR_THEMES.includes(id) ? id : 'default';
+      this.theme = COLOR_THEMES.includes(id) ? id : DEFAULT_COLOR_THEME;
       applyColorTheme(this.theme);
       try {
         window.localStorage.setItem(STORAGE_KEY, this.theme);

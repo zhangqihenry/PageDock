@@ -36,6 +36,7 @@ const dictionaries = {
     'displaySettings.rowSpacingCompact': '紧凑',
     'displaySettings.rowSpacingSpacious': '宽松',
     'displaySettings.columnsLabel': '每行方块数',
+    'displaySettings.tileHeight': '方块高度',
 
     'colorTheme.default': '默认',
     'colorTheme.dustyrose': '灰玫红',
@@ -226,6 +227,7 @@ const dictionaries = {
     'displaySettings.rowSpacingCompact': 'Compact',
     'displaySettings.rowSpacingSpacious': 'Spacious',
     'displaySettings.columnsLabel': 'Columns per row',
+    'displaySettings.tileHeight': 'Tile height',
 
     'colorTheme.default': 'Default',
     'colorTheme.dustyrose': 'Dusty Rose',

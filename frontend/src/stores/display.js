@@ -8,11 +8,15 @@ export const ROW_PADDING_DEFAULT = 1.125;
 export const GRID_COLUMNS_MIN = 2;
 export const GRID_COLUMNS_MAX = 5;
 export const GRID_COLUMNS_DEFAULT = 3;
+export const TILE_HEIGHT_MIN = 200;
+export const TILE_HEIGHT_MAX = 700;
+export const TILE_HEIGHT_DEFAULT = 500;
 
 const DEFAULTS = Object.freeze({
-  layout: 'table',
+  layout: 'grid',
   rowPadding: ROW_PADDING_DEFAULT,
   gridColumns: GRID_COLUMNS_DEFAULT,
+  tileHeight: TILE_HEIGHT_DEFAULT,
 });
 
 function clamp(value, min, max, fallback) {
@@ -31,7 +35,7 @@ function readStored() {
     }
     const parsed = JSON.parse(raw);
     return {
-      layout: parsed.layout === 'grid' ? 'grid' : 'table',
+      layout: parsed.layout === 'table' ? 'table' : 'grid',
       rowPadding: clamp(
         parsed.rowPadding,
         ROW_PADDING_MIN,
@@ -45,6 +49,9 @@ function readStored() {
           GRID_COLUMNS_MAX,
           DEFAULTS.gridColumns,
         ),
+      ),
+      tileHeight: Math.round(
+        clamp(parsed.tileHeight, TILE_HEIGHT_MIN, TILE_HEIGHT_MAX, DEFAULTS.tileHeight),
       ),
     };
   } catch {
@@ -60,6 +67,7 @@ function persist(state) {
         layout: state.layout,
         rowPadding: state.rowPadding,
         gridColumns: state.gridColumns,
+        tileHeight: state.tileHeight,
       }),
     );
   } catch {
@@ -74,7 +82,7 @@ export const useDisplayStore = defineStore('display', {
   state: () => readStored(),
   actions: {
     setLayout(layout) {
-      this.layout = layout === 'grid' ? 'grid' : 'table';
+      this.layout = layout === 'table' ? 'table' : 'grid';
       persist(this);
     },
     setRowPadding(value) {
@@ -89,6 +97,12 @@ export const useDisplayStore = defineStore('display', {
     setGridColumns(value) {
       this.gridColumns = Math.round(
         clamp(value, GRID_COLUMNS_MIN, GRID_COLUMNS_MAX, GRID_COLUMNS_DEFAULT),
+      );
+      persist(this);
+    },
+    setTileHeight(value) {
+      this.tileHeight = Math.round(
+        clamp(value, TILE_HEIGHT_MIN, TILE_HEIGHT_MAX, TILE_HEIGHT_DEFAULT),
       );
       persist(this);
     },

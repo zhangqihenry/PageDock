@@ -20,7 +20,10 @@ function siteHref(site) {
 }
 
 const listStyle = computed(() => ({ '--row-pad-block': `${display.rowPadding}rem` }));
-const gridStyle = computed(() => ({ '--grid-cols': display.gridColumns }));
+const gridStyle = computed(() => ({
+  '--grid-cols': display.gridColumns,
+  '--tile-height': `${display.tileHeight}px`,
+}));
 // The grid layout's tiles are already fully bordered cards, so the hero's
 // bottom rule would just double up against the first row of tiles — only
 // keep it when there's an actual table to draw a header-style line above.

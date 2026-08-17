@@ -6,6 +6,8 @@ import {
   GRID_COLUMNS_MIN,
   ROW_PADDING_MAX,
   ROW_PADDING_MIN,
+  TILE_HEIGHT_MAX,
+  TILE_HEIGHT_MIN,
   useDisplayStore,
 } from '../stores/display.js';
 import { useLocaleStore } from '../stores/locale.js';
@@ -175,23 +177,43 @@ function onKeydown(event) {
           </div>
         </div>
 
-        <div v-else class="settings-section">
-          <label class="settings-label" for="grid-columns-range">
-            {{ locale.t('displaySettings.columnsLabel') }}
-          </label>
-          <div class="settings-range">
-            <input
-              id="grid-columns-range"
-              type="range"
-              :min="GRID_COLUMNS_MIN"
-              :max="GRID_COLUMNS_MAX"
-              step="1"
-              :value="display.gridColumns"
-              @input="display.setGridColumns($event.target.valueAsNumber)"
-            />
-            <span class="settings-range-value mono">{{ display.gridColumns }}</span>
+        <template v-else>
+          <div class="settings-section">
+            <label class="settings-label" for="grid-columns-range">
+              {{ locale.t('displaySettings.columnsLabel') }}
+            </label>
+            <div class="settings-range">
+              <input
+                id="grid-columns-range"
+                type="range"
+                :min="GRID_COLUMNS_MIN"
+                :max="GRID_COLUMNS_MAX"
+                step="1"
+                :value="display.gridColumns"
+                @input="display.setGridColumns($event.target.valueAsNumber)"
+              />
+              <span class="settings-range-value mono">{{ display.gridColumns }}</span>
+            </div>
           </div>
-        </div>
+
+          <div class="settings-section">
+            <label class="settings-label" for="tile-height-range">
+              {{ locale.t('displaySettings.tileHeight') }}
+            </label>
+            <div class="settings-range">
+              <input
+                id="tile-height-range"
+                type="range"
+                :min="TILE_HEIGHT_MIN"
+                :max="TILE_HEIGHT_MAX"
+                step="10"
+                :value="display.tileHeight"
+                @input="display.setTileHeight($event.target.valueAsNumber)"
+              />
+              <span class="settings-range-value mono">{{ display.tileHeight }}px</span>
+            </div>
+          </div>
+        </template>
       </div>
     </div>
   </Teleport>

@@ -1,5 +1,11 @@
 # Changelog / 更新日志
 
+## v1.1.1 — 2026-08-17
+
+**EN:** Catalog grid tiles now render at a uniform height (default 500px, adjustable from display settings). The catalog defaults to the grid layout and the Indigo Mist color theme on first visit.
+
+**中文：** 方块布局下的卡片高度统一显示（默认 500px，可在显示设置中调整）。目录首次访问默认使用方块布局和靛蓝雾配色。
+
 ## v1.1.0 — 2026-08-17
 
 **EN:** Redesigned the catalog page with a cleaner, flatter overall style, and capped the page width at 800px. Removed the logo and name from the top left, and added a footer with the version number and a link to the author's GitHub profile. Added a display-settings button in the top right for switching between light/dark themes, picking from a wide set of low-saturation color themes, and switching between list and grid catalog layouts with matching display details, and renamed that corner's button to "Log in". Uploading a page now also supports adding a URL, usable as a link that opens the target site directly when clicked. Also fixed a handful of small display bugs found along the way.
