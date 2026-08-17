@@ -133,6 +133,10 @@ async function handleSaved() {
             <span class="site-card-title">{{ site.title }}</span>
             <span class="site-card-path mono">/{{ site.pathId }}/</span>
             <span
+              v-if="site.type === 'link'"
+              class="site-status-badge is-link"
+            >{{ locale.t('table.linkBadge') }}</span>
+            <span
               class="site-status-badge"
               :class="{ 'is-disabled': !site.enabled }"
             >{{ locale.t(site.enabled ? 'table.enabledStatus' : 'table.disabledStatus') }}</span>
@@ -149,7 +153,8 @@ async function handleSaved() {
                 : locale.t('common.noVersion')
             }}</span>
             <span>{{ formatUploadedAt(site.uploadedAt) }}</span>
-            <span>{{ formatBytes(site.sizeBytes) }}</span>
+            <span v-if="site.type === 'link'" class="mono">{{ site.linkUrl }}</span>
+            <span v-else>{{ formatBytes(site.sizeBytes) }}</span>
           </div>
 
           <div class="site-card-foot">
@@ -167,9 +172,9 @@ async function handleSaved() {
               <a
                 v-if="site.enabled"
                 class="btn"
-                :href="`/${site.pathId}/`"
+                :href="site.type === 'link' ? site.linkUrl : `/${site.pathId}/`"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
               >{{ locale.t('table.open') }}</a>
               <span v-else class="btn btn-disabled" aria-disabled="true">{{
                 locale.t('table.open')

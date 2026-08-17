@@ -1,5 +1,11 @@
 # Changelog / 更新日志
 
+## v1.1.0 — 2026-08-17
+
+**EN:** Redesigned the catalog page with a cleaner, flatter overall style, and capped the page width at 800px. Removed the logo and name from the top left, and added a footer with the version number and a link to the author's GitHub profile. Added a display-settings button in the top right for switching between light/dark themes, picking from a wide set of low-saturation color themes, and switching between list and grid catalog layouts with matching display details, and renamed that corner's button to "Log in". Uploading a page now also supports adding a URL, usable as a link that opens the target site directly when clicked. Also fixed a handful of small display bugs found along the way.
+
+**中文：** 网页目录页面进行了整体视觉重新设计，风格更加简洁扁平，页面宽度限制在最大 800px。移除了左上角的 Logo 和名称，新增页脚展示版本号和作者 GitHub 链接。右上角新增显示设置按钮，可切换亮/暗主题、从一大批低饱和度配色中选择、在列表和方块两种目录布局间切换并调整对应的显示细节，该按钮改名为「登录」。上传网页时新增「添加网址」方式，可作为超链接使用，点击后直接打开目标网址。另外顺手修复了几个小的显示问题。
+
 ## v1.0.0 — 2026-08-14
 
 **EN:** The catalog homepage now has an admin-editable big title and subtitle, and a redesigned blog-style layout with a refreshed visual style across the whole site. The top-right button is now called "Admin" and opens a tabbed admin page with three tabs. Logging in now happens through a modal on the homepage. Removed the `ADMIN_HOST` configuration option.

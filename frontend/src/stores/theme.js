@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { reapplyColorTheme } from './colorTheme.js';
 
 const STORAGE_KEY = 'pagedock-theme';
 
@@ -20,6 +21,10 @@ export const useThemeStore = defineStore('theme', {
     toggle() {
       this.theme = this.theme === 'dark' ? 'light' : 'dark';
       applyTheme(this.theme);
+      // The active color theme (if any) has separate light/dark numbers —
+      // re-run it now that data-theme has changed, or it'd keep showing
+      // the old mode's values.
+      reapplyColorTheme();
       try {
         window.localStorage.setItem(STORAGE_KEY, this.theme);
       } catch {

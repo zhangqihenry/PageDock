@@ -5,6 +5,13 @@ export const MAX_TITLE_LENGTH = 100;
 export const MAX_VERSION_LENGTH = 40;
 export const DEFAULT_SORT_ORDER = 0;
 export const MAX_SORT_ORDER = 999999;
+export const MAX_LINK_URL_LENGTH = 2000;
+// A site is either an uploaded page (HTML/ZIP, the default) or a "link" —
+// a bookmark-like entry that forwards visitors to an external URL instead
+// of serving uploaded content. Missing/unrecognized `type` on stored
+// metadata is always treated as 'page' for backward compatibility with
+// records written before this field existed.
+export const SITE_TYPES = Object.freeze(['page', 'link']);
 
 export function normalizeDescription(value) {
   const description = String(value || '')
@@ -48,6 +55,43 @@ export function normalizeVersion(value) {
     );
   }
   return version;
+}
+
+// Validates and canonicalizes a "link" site's target URL. Only http/https
+// are accepted — this string ends up both in an href the admin UI/catalog
+// render directly and in a server-generated redirect page, so schemes like
+// `javascript:` or `data:` must never pass through.
+export function normalizeLinkUrl(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) {
+    throw new AppError('请填写目标网址。', 400, 'LINK_URL_REQUIRED');
+  }
+  if (raw.length > MAX_LINK_URL_LENGTH) {
+    throw new AppError(
+      `目标网址不能超过 ${MAX_LINK_URL_LENGTH} 个字符。`,
+      400,
+      'LINK_URL_TOO_LONG',
+    );
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new AppError(
+      '请填写有效的网址，需以 http:// 或 https:// 开头。',
+      400,
+      'INVALID_LINK_URL',
+    );
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new AppError(
+      '请填写有效的网址，需以 http:// 或 https:// 开头。',
+      400,
+      'INVALID_LINK_URL',
+    );
+  }
+  return parsed.toString();
 }
 
 // Returns a non-negative integer. Pages sort by this number from high to

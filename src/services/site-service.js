@@ -4,10 +4,12 @@ import { AppError } from '../errors.js';
 import { assertValidPathId, isValidPathId } from '../utils/path-id.js';
 import {
   normalizeDescription,
+  normalizeLinkUrl,
   normalizeSortOrder,
   normalizeTitle,
   normalizeVersion,
 } from '../utils/metadata-fields.js';
+import { renderLinkRedirectHtml } from '../utils/link-redirect-page.js';
 
 const METADATA_FILE = '.pagedock.json';
 
@@ -72,6 +74,9 @@ async function describeSite(pathId, root) {
 
   return {
     pathId,
+    // Absent/unrecognized `type` means this record predates the "link"
+    // site feature — always a page.
+    type: metadata?.type === 'link' ? 'link' : 'page',
     title:
       typeof metadata?.title === 'string' && metadata.title
         ? metadata.title
@@ -79,6 +84,10 @@ async function describeSite(pathId, root) {
     description:
       typeof metadata?.description === 'string' ? metadata.description : '',
     version: typeof metadata?.version === 'string' ? metadata.version : '',
+    linkUrl:
+      metadata?.type === 'link' && typeof metadata.linkUrl === 'string'
+        ? metadata.linkUrl
+        : '',
     uploadedAt: metadata?.uploadedAt || stats.mtime.toISOString(),
     sizeBytes,
     enabled: metadata?.enabled !== false,
@@ -164,7 +173,7 @@ export function createSiteService(config) {
     return describeSite(pathId, root);
   }
 
-  async function update(pathId, { title, description, version }) {
+  async function update(pathId, { title, description, version, linkUrl }) {
     const root = siteRoot(pathId);
     if (!(await exists(pathId))) {
       throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
@@ -174,22 +183,43 @@ export function createSiteService(config) {
     const normalizedDescription = normalizeDescription(description);
     const normalizedVersion = normalizeVersion(version);
 
-    const [existingMetadata, stats, sizeBytes] = await Promise.all([
-      readMetadata(root),
+    const existingMetadata = await readMetadata(root);
+    // A site's type is fixed at creation and never trusted from the
+    // request — it's read back from what's already on disk, so editing
+    // can't be used to flip a page into a link or vice versa.
+    const isLink = existingMetadata?.type === 'link';
+    let normalizedLinkUrl = '';
+
+    if (isLink) {
+      normalizedLinkUrl = normalizeLinkUrl(linkUrl);
+      // The redirect target changed — regenerate the stub page that
+      // forwards visitors, same as the one createLinkSite() wrote.
+      await fs.writeFile(
+        path.join(root, 'index.html'),
+        renderLinkRedirectHtml(normalizedTitle, normalizedLinkUrl),
+        'utf8',
+      );
+    }
+
+    const [stats, sizeBytes] = await Promise.all([
       fs.stat(root),
       directorySize(root),
     ]);
 
     const metadata = {
       ...existingMetadata,
-      schemaVersion: 4,
+      schemaVersion: 5,
       pathId,
+      type: isLink ? 'link' : 'page',
       title: normalizedTitle,
       description: normalizedDescription,
       version: normalizedVersion,
       uploadedAt: existingMetadata?.uploadedAt || stats.mtime.toISOString(),
       sizeBytes,
     };
+    if (isLink) {
+      metadata.linkUrl = normalizedLinkUrl;
+    }
     await writeMetadata(root, metadata);
     return metadata;
   }
@@ -208,7 +238,7 @@ export function createSiteService(config) {
     ]);
     const metadata = {
       ...existingMetadata,
-      schemaVersion: 4,
+      schemaVersion: 5,
       pathId,
       title: site.title,
       description: site.description,
@@ -247,7 +277,7 @@ export function createSiteService(config) {
     ]);
     const metadata = {
       ...existingMetadata,
-      schemaVersion: 4,
+      schemaVersion: 5,
       pathId,
       title: site.title,
       description: site.description,

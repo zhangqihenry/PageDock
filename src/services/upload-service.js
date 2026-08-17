@@ -7,9 +7,11 @@ import { assertValidPathId } from '../utils/path-id.js';
 import {
   DEFAULT_SORT_ORDER,
   normalizeDescription,
+  normalizeLinkUrl,
   normalizeTitle,
   normalizeVersion,
 } from '../utils/metadata-fields.js';
+import { renderLinkRedirectHtml } from '../utils/link-redirect-page.js';
 import { extractZipSafely } from './zip-service.js';
 
 const ACCEPTED_MIME_TYPES = Object.freeze({
@@ -70,14 +72,58 @@ async function writeMetadata(
   enabled,
 ) {
   const metadata = {
-    schemaVersion: 4,
+    schemaVersion: 5,
     pathId,
+    type: 'page',
     title,
     description,
     version,
     sortOrder,
     uploadedAt: new Date().toISOString(),
     sizeBytes,
+    enabled,
+  };
+  await fs.writeFile(
+    path.join(stagingRoot, '.pagedock.json'),
+    `${JSON.stringify(metadata, null, 2)}\n`,
+    { encoding: 'utf8', flag: 'wx' },
+  );
+  return metadata;
+}
+
+// A "link" site has no uploaded content — its staging directory gets a
+// generated index.html that immediately forwards visitors to `linkUrl`
+// (see link-redirect-page.js), plus the same kind of metadata file a page
+// upload writes. It's promoted through the exact same
+// promoteStagingDirectory() path, so conflict/overwrite handling is
+// identical to a regular upload.
+async function writeLinkFiles(
+  stagingRoot,
+  pathId,
+  title,
+  description,
+  version,
+  linkUrl,
+  sortOrder,
+  enabled,
+) {
+  const html = renderLinkRedirectHtml(title, linkUrl);
+  await fs.writeFile(path.join(stagingRoot, 'index.html'), html, {
+    encoding: 'utf8',
+    flag: 'wx',
+  });
+
+  const metadata = {
+    schemaVersion: 5,
+    pathId,
+    type: 'link',
+    title,
+    description,
+    version,
+    linkUrl,
+    sortOrder,
+    uploadedAt: new Date().toISOString(),
+    sizeBytes: Buffer.byteLength(html, 'utf8'),
     enabled,
   };
   await fs.writeFile(
@@ -121,7 +167,7 @@ async function promoteStagingDirectory(stagingRoot, targetRoot, overwrite) {
 }
 
 export function createUploadService(config, siteService) {
-  return async function uploadSite({
+  async function uploadSite({
     pathId,
     title,
     description,
@@ -211,17 +257,74 @@ export function createUploadService(config, siteService) {
         await fs.rm(stagingRoot, { recursive: true, force: true }).catch(() => {});
       }
     }
-  };
+  }
+
+  // Same shape as uploadSite (validate → stage → promote), but for a "link"
+  // site: no file involved, the staged content is a generated redirect page.
+  async function createLinkSite({
+    pathId,
+    title,
+    description,
+    version,
+    linkUrl,
+    overwrite = false,
+  }) {
+    assertValidPathId(pathId);
+    const normalizedTitle = normalizeTitle(title);
+    const normalizedDescription = normalizeDescription(description);
+    const normalizedVersion = normalizeVersion(version);
+    const normalizedLinkUrl = normalizeLinkUrl(linkUrl);
+    const stagingRoot = path.join(
+      config.stagingDir,
+      `${Date.now()}-${crypto.randomUUID()}`,
+    );
+    const targetRoot = siteService.siteRoot(pathId);
+    let enabled = true;
+    let sortOrder = DEFAULT_SORT_ORDER;
+    let promoted = false;
+
+    if (overwrite && (await siteService.exists(pathId))) {
+      const existing = await siteService.get(pathId);
+      enabled = existing.enabled;
+      sortOrder = existing.sortOrder;
+    }
+
+    await fs.mkdir(stagingRoot, { recursive: false });
+
+    try {
+      const metadata = await writeLinkFiles(
+        stagingRoot,
+        pathId,
+        normalizedTitle,
+        normalizedDescription,
+        normalizedVersion,
+        normalizedLinkUrl,
+        sortOrder,
+        enabled,
+      );
+      await promoteStagingDirectory(stagingRoot, targetRoot, overwrite);
+      promoted = true;
+      return metadata;
+    } finally {
+      if (!promoted) {
+        await fs.rm(stagingRoot, { recursive: true, force: true }).catch(() => {});
+      }
+    }
+  }
+
+  return { uploadSite, createLinkSite };
 }
 
 export { ACCEPTED_MIME_TYPES };
 export {
   DEFAULT_SORT_ORDER,
   MAX_DESCRIPTION_LENGTH,
+  MAX_LINK_URL_LENGTH,
   MAX_SORT_ORDER,
   MAX_TITLE_LENGTH,
   MAX_VERSION_LENGTH,
   normalizeDescription,
+  normalizeLinkUrl,
   normalizeSortOrder,
   normalizeTitle,
   normalizeVersion,

@@ -14,10 +14,12 @@ const catalog = useCatalogStore();
 const locale = useLocaleStore();
 
 const form = reactive({
+  mode: 'file',
   title: '',
   pathId: '',
   version: '',
   description: '',
+  linkUrl: '',
   overwrite: 'false',
 });
 const fileInput = ref(null);
@@ -35,10 +37,29 @@ onMounted(async () => {
   }
 });
 
+function resetForm() {
+  Object.assign(form, {
+    title: '',
+    pathId: '',
+    version: '',
+    description: '',
+    linkUrl: '',
+    overwrite: 'false',
+  });
+  if (fileInput.value) {
+    fileInput.value.value = '';
+  }
+}
+
 async function submit() {
+  const isLink = form.mode === 'link';
   const file = fileInput.value?.files?.[0];
-  if (!file) {
+  if (!isLink && !file) {
     error.value = locale.t('errorCode.NO_FILE');
+    return;
+  }
+  if (isLink && !form.linkUrl.trim()) {
+    error.value = locale.t('errorCode.LINK_URL_REQUIRED');
     return;
   }
 
@@ -51,20 +72,16 @@ async function submit() {
     body.append('version', form.version);
     body.append('description', form.description);
     body.append('overwrite', form.overwrite);
-    body.append('siteFile', file);
+    if (isLink) {
+      body.append('type', 'link');
+      body.append('linkUrl', form.linkUrl.trim());
+    } else {
+      body.append('siteFile', file);
+    }
 
     await api.post('/admin/sites', body, { csrfToken: auth.csrfToken });
     await catalog.fetch();
-    Object.assign(form, {
-      title: '',
-      pathId: '',
-      version: '',
-      description: '',
-      overwrite: 'false',
-    });
-    if (fileInput.value) {
-      fileInput.value.value = '';
-    }
+    resetForm();
     emit('uploaded');
   } catch (err) {
     error.value = describeError(err, locale);
@@ -89,6 +106,25 @@ async function submit() {
       </p>
     </div>
 
+    <div class="segmented" role="group">
+      <button
+        type="button"
+        class="segmented-option"
+        :class="{ 'is-active': form.mode === 'file' }"
+        @click="form.mode = 'file'"
+      >
+        {{ locale.t('form.modeFile') }}
+      </button>
+      <button
+        type="button"
+        class="segmented-option"
+        :class="{ 'is-active': form.mode === 'link' }"
+        @click="form.mode = 'link'"
+      >
+        {{ locale.t('form.modeLink') }}
+      </button>
+    </div>
+
     <p v-if="error" class="alert alert-error" role="alert">{{ error }}</p>
 
     <form class="upload-grid" @submit.prevent="submit">
@@ -111,9 +147,19 @@ async function submit() {
           required
         />
       </label>
-      <label>
+      <label v-if="form.mode === 'file'">
         {{ locale.t('form.fileLabel') }}
         <input ref="fileInput" type="file" accept=".html,.zip" required />
+      </label>
+      <label v-else>
+        {{ locale.t('form.linkUrlLabel') }}
+        <input
+          v-model="form.linkUrl"
+          type="url"
+          :placeholder="locale.t('form.linkUrlPlaceholder')"
+          maxlength="2000"
+          required
+        />
       </label>
       <label>
         {{ locale.t('form.versionLabel') }}
@@ -149,3 +195,9 @@ async function submit() {
     </form>
   </div>
 </template>
+
+<style scoped>
+.segmented {
+  margin-bottom: 1.25rem;
+}
+</style>

@@ -41,7 +41,10 @@ function createUploadMiddleware(config) {
   }).single('siteFile');
 }
 
-export function createAdminSitesRouter(config, { siteService, uploadSite }) {
+export function createAdminSitesRouter(
+  config,
+  { siteService, uploadSite, createLinkSite },
+) {
   const router = Router();
   const upload = createUploadMiddleware(config);
 
@@ -60,14 +63,30 @@ export function createAdminSitesRouter(config, { siteService, uploadSite }) {
   });
 
   router.post('/', upload, verifyCsrfToken, async (req, res) => {
-    const metadata = await uploadSite({
-      pathId: String(req.body.pathId || ''),
-      title: String(req.body.title || ''),
-      description: String(req.body.description || ''),
-      version: String(req.body.version || ''),
-      file: req.file,
-      overwrite: req.body.overwrite === 'true',
-    });
+    const pathId = String(req.body.pathId || '');
+    const title = String(req.body.title || '');
+    const description = String(req.body.description || '');
+    const version = String(req.body.version || '');
+    const overwrite = req.body.overwrite === 'true';
+
+    const metadata =
+      req.body.type === 'link'
+        ? await createLinkSite({
+            pathId,
+            title,
+            description,
+            version,
+            linkUrl: String(req.body.linkUrl || ''),
+            overwrite,
+          })
+        : await uploadSite({
+            pathId,
+            title,
+            description,
+            version,
+            file: req.file,
+            overwrite,
+          });
     res.status(201).json(metadata);
   });
 
@@ -88,10 +107,13 @@ export function createAdminSitesRouter(config, { siteService, uploadSite }) {
         overwrite: true,
       });
     } else {
+      // linkUrl is only applied when the site already on disk is a "link"
+      // type (see siteService.update) — harmless to always pass it.
       metadata = await siteService.update(pathId, {
         title,
         description,
         version,
+        linkUrl: String(req.body.linkUrl || ''),
       });
     }
     res.json(metadata);

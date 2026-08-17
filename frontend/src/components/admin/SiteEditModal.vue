@@ -13,7 +13,7 @@ const emit = defineEmits(['close', 'saved']);
 const auth = useAuthStore();
 const locale = useLocaleStore();
 
-const form = reactive({ title: '', version: '', description: '' });
+const form = reactive({ title: '', version: '', description: '', linkUrl: '' });
 const fileInput = ref(null);
 const submitting = ref(false);
 const error = ref('');
@@ -28,6 +28,7 @@ watch(
     form.title = site.title;
     form.version = site.version;
     form.description = site.description;
+    form.linkUrl = site.linkUrl || '';
     error.value = '';
     submitting.value = false;
     if (fileInput.value) {
@@ -50,9 +51,13 @@ async function submit() {
     body.append('title', form.title);
     body.append('version', form.version);
     body.append('description', form.description);
-    const file = fileInput.value?.files?.[0];
-    if (file) {
-      body.append('siteFile', file);
+    if (props.site.type === 'link') {
+      body.append('linkUrl', form.linkUrl);
+    } else {
+      const file = fileInput.value?.files?.[0];
+      if (file) {
+        body.append('siteFile', file);
+      }
     }
 
     await api.patch(`/admin/sites/${props.site.pathId}`, body, {
@@ -139,11 +144,25 @@ function onKeydown(event) {
               rows="3"
             ></textarea>
           </label>
-          <label>
-            {{ locale.t('edit.replaceFileLabel') }}
-            <input ref="fileInput" type="file" accept=".html,.zip" />
-          </label>
-          <p class="muted edit-hint">{{ locale.t('edit.replaceFileHint') }}</p>
+          <template v-if="site.type === 'link'">
+            <label>
+              {{ locale.t('form.linkUrlLabel') }}
+              <input
+                v-model="form.linkUrl"
+                type="url"
+                :placeholder="locale.t('form.linkUrlPlaceholder')"
+                maxlength="2000"
+                required
+              />
+            </label>
+          </template>
+          <template v-else>
+            <label>
+              {{ locale.t('edit.replaceFileLabel') }}
+              <input ref="fileInput" type="file" accept=".html,.zip" />
+            </label>
+            <p class="muted edit-hint">{{ locale.t('edit.replaceFileHint') }}</p>
+          </template>
           <button type="submit" class="btn-solid btn-block" :disabled="submitting">
             {{ locale.t('edit.save') }}
           </button>

@@ -28,9 +28,9 @@ const locale = useLocaleStore();
 .not-found-code {
   margin-bottom: 0.4rem;
   color: var(--accent);
-  font-family: var(--font-voice);
   font-size: 3.2rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums lining-nums;
 }
 
