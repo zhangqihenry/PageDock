@@ -13,7 +13,7 @@ export const TILE_HEIGHT_MAX = 700;
 export const TILE_HEIGHT_DEFAULT = 500;
 
 const DEFAULTS = Object.freeze({
-  layout: 'grid',
+  layout: 'table',
   rowPadding: ROW_PADDING_DEFAULT,
   gridColumns: GRID_COLUMNS_DEFAULT,
   tileHeight: TILE_HEIGHT_DEFAULT,

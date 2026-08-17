@@ -1,91 +1,141 @@
 # Changelog / 更新日志
 
+## v1.2.0 — 2026-08-18
+
+**EN:**
+- Added typography controls for the catalog's title, subtitle, list/grid item text, and footer — fonts, sizes, and spacing, from display settings.
+
+**中文：**
+- 新增目录页大标题、小标题、列表/方块条目文字和页脚的排版自定义选项，包括字体、字号和间距，可在显示设置中调整。
+
 ## v1.1.1 — 2026-08-17
 
-**EN:** Catalog grid tiles now render at a uniform height (default 500px, adjustable from display settings). The catalog defaults to the grid layout and the Indigo Mist color theme on first visit.
+**EN:**
+- Fixed some small bugs and made some small adjustments.
 
-**中文：** 方块布局下的卡片高度统一显示（默认 500px，可在显示设置中调整）。目录首次访问默认使用方块布局和靛蓝雾配色。
+**中文：**
+- 修复了一些小 bug，做了一些小调整。
 
 ## v1.1.0 — 2026-08-17
 
-**EN:** Redesigned the catalog page with a cleaner, flatter overall style, and capped the page width at 800px. Removed the logo and name from the top left, and added a footer with the version number and a link to the author's GitHub profile. Added a display-settings button in the top right for switching between light/dark themes, picking from a wide set of low-saturation color themes, and switching between list and grid catalog layouts with matching display details, and renamed that corner's button to "Log in". Uploading a page now also supports adding a URL, usable as a link that opens the target site directly when clicked. Also fixed a handful of small display bugs found along the way.
+**EN:**
+- Redesigned the catalog page's overall visual style.
+- Added a display-settings panel for choosing themes, colors, and catalog layout.
+- Added support for publishing a URL as a page entry.
 
-**中文：** 网页目录页面进行了整体视觉重新设计，风格更加简洁扁平，页面宽度限制在最大 800px。移除了左上角的 Logo 和名称，新增页脚展示版本号和作者 GitHub 链接。右上角新增显示设置按钮，可切换亮/暗主题、从一大批低饱和度配色中选择、在列表和方块两种目录布局间切换并调整对应的显示细节，该按钮改名为「登录」。上传网页时新增「添加网址」方式，可作为超链接使用，点击后直接打开目标网址。另外顺手修复了几个小的显示问题。
+**中文：**
+- 网页目录页面进行了整体视觉重新设计。
+- 新增显示设置面板，可自定义主题、配色和目录布局。
+- 新增发布网址类型网页的功能。
 
 ## v1.0.0 — 2026-08-14
 
-**EN:** The catalog homepage now has an admin-editable big title and subtitle, and a redesigned blog-style layout with a refreshed visual style across the whole site. The top-right button is now called "Admin" and opens a tabbed admin page with three tabs. Logging in now happens through a modal on the homepage. Removed the `ADMIN_HOST` configuration option.
+**EN:**
+- Catalog title and subtitle are now admin-editable.
+- Redesigned the catalog into a blog-style layout with a refreshed visual style.
+- Removed the `ADMIN_HOST` configuration option.
 
-**中文：** 网页目录首页现在可以在后台自定义大标题和小标题，采用了全新的 Blog 风格布局，全站视觉设计也做了翻新。右上角按钮改名为「后台管理」，点击后打开的后台管理页面分成了三个选项卡。登录改为通过首页弹窗完成。移除了 `ADMIN_HOST` 配置项。
+**中文：**
+- 网页目录的大标题和小标题现在可以在后台自定义。
+- 首页改为 Blog 风格布局，视觉设计做了翻新。
+- 移除了 `ADMIN_HOST` 配置项。
 
 ## v0.8.3 — 2026-08-11
 
-**EN:** Fixed the admin table's row divider lines appearing broken/stepped around the actions column on rows shorter than their button grid. The 2x2 button layout now lives on an inner wrapper instead of the table cell itself, so every cell in a row shares the same border position again.
+**EN:**
+- Fixed a small display bug.
 
-**中文：** 修复了管理后台表格中，行高小于按钮网格高度时，操作列附近的行分隔线会显示断开/错位的问题。四个按钮的 2×2 布局现在放在单元格内部的一层容器上，不再直接设在表格单元格本身，这样同一行的所有列边框会正常对齐。
+**中文：**
+- 修复了一个小的显示问题。
 
 ## v0.8.2 — 2026-08-11
 
-**EN:** Moved the "Save order" button out of the panel heading to its own row directly under the sort-order column, sized to match the number input, and switched it from the solid accent style to the same plain button style used elsewhere in the table.
+**EN:**
+- Made a small adjustment to the admin table.
 
-**中文：** 「保存排序」按钮从表格标题栏移到了排序数字列下方单独一行，大小与排序输入框一致，并且从红色实心按钮改成了和表格里其他按钮一样的普通样式。
+**中文：**
+- 对已上传网页表格做了一处小调整。
 
 ## v0.8.1 — 2026-08-11
 
-**EN:** The sort-order column in the admin table now saves all rows at once with a single "Save order" button, instead of a save button per row. The number field no longer shows a hint text that could get cut off — a blank field simply defaults to 0, and a decimal, a negative number, or non-numeric text is silently treated as 0 as well.
+**EN:**
+- The admin table's sort-order column now saves all rows at once.
 
-**中文：** 已上传网页表格的排序数字列现在改为一次性保存所有行，用一个「保存排序」按钮代替原来每行一个的保存按钮。排序数字输入框不再显示可能被截断的提示文字——留空默认就是 0，输入小数、负数或非数字文本也会自动按 0 处理。
+**中文：**
+- 已上传网页表格的排序数字列现在可以一次性保存所有行。
 
 ## v0.8.0 — 2026-08-11
 
-**EN:** Reworked page sorting: the sort number is no longer set at upload time — the uploaded-pages table now has its own column with an inline field to set or clear a page's sort number directly, no need to open the edit page. Uploading or replacing a page's file always preserves its existing sort number. Also added a small version badge to the top right of the catalog page, linking to the matching GitHub release.
+**EN:**
+- The admin table has an inline field to set or clear a page's sort number.
+- Added a version badge to the catalog page, linking to the matching GitHub release.
 
-**中文：** 重新设计了网页排序功能：排序数字不再需要在上传时指定——已上传网页表格现在有独立的一列，可以直接在表格里输入或清空排序数字，无需进入编辑页面。上传或替换网页文件时会保留原有的排序数字。另外在目录页右上角新增了一个版本号标识，点击可跳转到对应的 GitHub Release。
+**中文：**
+- 已上传网页表格新增排序数字的行内编辑功能。
+- 目录页新增版本号标识，可跳转到对应的 GitHub Release。
 
 ## v0.7.0 — 2026-08-11
 
-**EN:** Uploaded pages can now be given an optional sort number. Pages with a sort number are listed above pages without one, ordered from highest to lowest; pages without a sort number keep the previous behavior of sorting by most recently uploaded. The number can be set on upload or edited later.
+**EN:**
+- Uploaded pages can now be given an optional sort number to control catalog order.
 
-**中文：** 已上传的网页现在可以设置一个可选的排序数字。设置了排序数字的网页会显示在未设置的网页之前，按数字从大到小排列；未设置排序数字的网页仍按上传时间从新到旧排列。排序数字可以在上传时填写，也可以之后编辑修改。
+**中文：**
+- 已上传的网页现在可以设置可选的排序数字，控制目录排序。
 
 ## v0.6.0 — 2026-08-04
 
-**EN:** Added page enable/disable controls: disabled pages remain available for administration and editing but are hidden from the public catalog and unavailable through their public paths. Redesigned the uploaded-page table into a compact multi-line layout that keeps long descriptions and actions on one page without horizontal scrolling, made delete actions more prominent with a red treatment, and added a GitHub profile link to the catalog header.
+**EN:**
+- Added page enable/disable controls.
 
-**中文：** 新增网页启用/停用功能：停用后的网页仍可在后台管理和编辑，但不会显示在公开目录中，也无法通过公开路径访问。重新设计已上传网页表格，采用紧凑的多行布局，使较长说明和操作按钮无需横向滚动即可在一页内显示；同时将删除操作改为醒目的红色样式，并在目录页顶部新增 GitHub 主页入口。
+**中文：**
+- 新增网页启用/停用功能。
 
 ## v0.5.0 — 2026-07-30
 
-**EN:** Completed the page edit feature: editing an uploaded page can now also replace its file (a single HTML file or a full ZIP package), clearing the old content and updating the upload time to the replacement time; editing without a new file still keeps the original upload time.
+**EN:**
+- Editing an uploaded page can now also replace its file.
 
-**中文：** 完善了网页上传后的修改功能：编辑已上传的网页时现在也可以替换网页文件（单个 HTML 文件或整个 ZIP 压缩包），替换会清空原有内容并将上传时间更新为本次替换时间；不选择文件、仅修改信息时仍保留原上传时间。
+**中文：**
+- 编辑已上传的网页时现在也可以替换网页文件。
 
 ## v0.4.1 — 2026-07-29
 
-**EN:** Fixed catalog page descriptions collapsing multi-line input onto a single line; line breaks are now preserved.
+**EN:**
+- Fixed a small display bug.
 
-**中文：** 修复首页目录中页面描述的换行会被折叠成一行的问题，现在多行描述可以正常换行显示。
+**中文：**
+- 修复了一个小的显示问题。
 
 ## v0.4.0 — 2026-07-29
 
-**EN:** Admins can now edit a page's title, description, and version after it has been uploaded.
+**EN:**
+- Admins can now edit a page's title, description, and version after upload.
 
-**中文：** 管理员现在可以在上传后编辑页面的标题、描述和版本号。
+**中文：**
+- 管理员现在可以在上传后编辑页面的标题、描述和版本号。
 
 ## v0.3.0 — 2026-07-29
 
-**EN:** Added a site logo, and uploads can now carry a title, version, and timestamp.
+**EN:**
+- Uploads can now carry a title, version, and timestamp.
 
-**中文：** 新增站点 Logo，上传时可以填写标题、版本号，并记录上传时间。
+**中文：**
+- 上传网页时新增标题、版本号和上传时间记录。
 
 ## v0.2.0 — 2026-07-28
 
-**EN:** Redesigned the UI in a Swiss International style with light/dark theme and language (Chinese/English) toggles; merged the README into a single bilingual document.
+**EN:**
+- Redesigned the UI in a Swiss International style.
+- Added light/dark theme and Chinese/English language toggles.
 
-**中文：** 以瑞士国际主义风格重新设计了界面，新增深色/浅色主题和中英文语言切换；将 README 合并为一份中英双语文档。
+**中文：**
+- 界面改为瑞士国际主义风格重新设计。
+- 新增深色/浅色主题和中英文语言切换。
 
 ## v0.1.1 — 2026-07-28
 
-**EN:** Initial release — a lightweight, self-hosted dock for sharing static web pages, with Docker images published to GHCR for simplified NAS deployment.
+**EN:**
+- Initial release: a lightweight, self-hosted dock for sharing static web pages, with Docker images on GHCR.
 
-**中文：** 首个版本——一个轻量级的自托管静态网页分享工具，Docker 镜像发布到 GHCR，方便在 NAS 上部署。
+**中文：**
+- 首个版本：轻量级自托管静态网页分享工具，Docker 镜像发布到 GHCR。

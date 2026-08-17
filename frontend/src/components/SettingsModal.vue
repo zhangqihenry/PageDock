@@ -12,7 +12,9 @@ import {
 } from '../stores/display.js';
 import { useLocaleStore } from '../stores/locale.js';
 import { useThemeStore } from '../stores/theme.js';
+import { useTypographyStore } from '../stores/typography.js';
 import { COLOR_THEME_HUES, previewColors } from '../theme/colorThemePalette.js';
+import TypographySettingGroup from './TypographySettingGroup.vue';
 
 defineProps({
   open: { type: Boolean, default: false },
@@ -22,6 +24,7 @@ const emit = defineEmits(['close']);
 const theme = useThemeStore();
 const display = useDisplayStore();
 const colorTheme = useColorThemeStore();
+useTypographyStore(); // registers the store; groups below read/write it directly
 const locale = useLocaleStore();
 
 const HUE_BY_ID = Object.fromEntries(COLOR_THEME_HUES.map((entry) => [entry.id, entry.hue]));
@@ -36,6 +39,41 @@ const colorThemeOptions = computed(() =>
     return { id, bg, accent, labelKey: `colorTheme.${id}` };
   }),
 );
+
+// Typography groups, split by where they sit relative to the layout
+// toggle — TOP always shows (title/subtitle/page count are above the
+// list either way), TABLE/GRID are layout-specific, FOOTER always shows
+// at the end. See TypographySettingGroup.vue for what each key means.
+const TOP_TYPOGRAPHY_GROUPS = [
+  {
+    titleKey: 'typography.groupH1',
+    font: 'h1Font',
+    size: 'h1Size',
+    before: 'h1SpaceBefore',
+    after: 'h1SpaceAfter',
+  },
+  {
+    titleKey: 'typography.groupSubtitle',
+    font: 'subtitleFont',
+    size: 'subtitleSize',
+    before: 'subtitleSpaceBefore',
+    after: 'subtitleSpaceAfter',
+  },
+];
+const TABLE_TYPOGRAPHY_GROUPS = [
+  { titleKey: 'typography.groupListIndex', size: 'rowIndexSize' },
+  { titleKey: 'typography.groupListTitle', font: 'listTitleFont', size: 'listTitleSize' },
+  { titleKey: 'typography.groupListDesc', font: 'listDescFont', size: 'listDescSize' },
+];
+const GRID_TYPOGRAPHY_GROUPS = [
+  { titleKey: 'typography.groupTileTitle', font: 'tileTitleFont', size: 'tileTitleSize' },
+  { titleKey: 'typography.groupTileDesc', font: 'tileDescFont', size: 'tileDescSize' },
+];
+const FOOTER_TYPOGRAPHY_GROUP = {
+  titleKey: 'typography.groupFooter',
+  font: 'footerFont',
+  size: 'footerSize',
+};
 
 function setTheme(value) {
   if (theme.theme !== value) {
@@ -132,6 +170,14 @@ function onKeydown(event) {
           </div>
         </div>
 
+        <h3 class="settings-group-title">{{ locale.t('typography.sectionTitle') }}</h3>
+
+        <TypographySettingGroup
+          v-for="group in TOP_TYPOGRAPHY_GROUPS"
+          :key="group.titleKey"
+          v-bind="group"
+        />
+
         <div class="settings-section">
           <span class="settings-label">{{ locale.t('displaySettings.layout') }}</span>
           <div class="segmented" role="group">
@@ -154,28 +200,36 @@ function onKeydown(event) {
           </div>
         </div>
 
-        <div v-if="display.layout === 'table'" class="settings-section">
-          <label class="settings-label" for="row-padding-range">
-            {{ locale.t('displaySettings.rowSpacing') }}
-          </label>
-          <div class="settings-range">
-            <span class="settings-range-hint">{{
-              locale.t('displaySettings.rowSpacingCompact')
-            }}</span>
-            <input
-              id="row-padding-range"
-              type="range"
-              :min="ROW_PADDING_MIN"
-              :max="ROW_PADDING_MAX"
-              step="0.125"
-              :value="display.rowPadding"
-              @input="display.setRowPadding($event.target.valueAsNumber)"
-            />
-            <span class="settings-range-hint">{{
-              locale.t('displaySettings.rowSpacingSpacious')
-            }}</span>
+        <template v-if="display.layout === 'table'">
+          <div class="settings-section">
+            <label class="settings-label" for="row-padding-range">
+              {{ locale.t('displaySettings.rowSpacing') }}
+            </label>
+            <div class="settings-range">
+              <span class="settings-range-hint">{{
+                locale.t('displaySettings.rowSpacingCompact')
+              }}</span>
+              <input
+                id="row-padding-range"
+                type="range"
+                :min="ROW_PADDING_MIN"
+                :max="ROW_PADDING_MAX"
+                step="0.125"
+                :value="display.rowPadding"
+                @input="display.setRowPadding($event.target.valueAsNumber)"
+              />
+              <span class="settings-range-hint">{{
+                locale.t('displaySettings.rowSpacingSpacious')
+              }}</span>
+            </div>
           </div>
-        </div>
+
+          <TypographySettingGroup
+            v-for="group in TABLE_TYPOGRAPHY_GROUPS"
+            :key="group.titleKey"
+            v-bind="group"
+          />
+        </template>
 
         <template v-else>
           <div class="settings-section">
@@ -213,7 +267,15 @@ function onKeydown(event) {
               <span class="settings-range-value mono">{{ display.tileHeight }}px</span>
             </div>
           </div>
+
+          <TypographySettingGroup
+            v-for="group in GRID_TYPOGRAPHY_GROUPS"
+            :key="group.titleKey"
+            v-bind="group"
+          />
         </template>
+
+        <TypographySettingGroup v-bind="FOOTER_TYPOGRAPHY_GROUP" />
       </div>
     </div>
   </Teleport>
