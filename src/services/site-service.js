@@ -45,6 +45,21 @@ async function directorySize(directoryPath) {
   return total;
 }
 
+// Sites are stored extracted on disk, so what the admin originally handed
+// us — a lone .html file or a .zip archive — is only recoverable from the
+// `sourceKind` recorded at upload time. Records written before that field
+// existed are inferred instead: a site whose only content is index.html
+// could only have come from a single-file upload.
+async function inferSourceKind(siteRoot) {
+  const entries = await fs.readdir(siteRoot, { withFileTypes: true });
+  const content = entries.filter((entry) => entry.name !== METADATA_FILE);
+  return content.length === 1 &&
+    content[0].isFile() &&
+    content[0].name === 'index.html'
+    ? 'html'
+    : 'zip';
+}
+
 async function readMetadata(siteRoot) {
   try {
     const raw = await fs.readFile(path.join(siteRoot, METADATA_FILE), 'utf8');
@@ -72,11 +87,22 @@ async function describeSite(pathId, root) {
     directorySize(root),
   ]);
 
+  // Absent/unrecognized `type` means this record predates the "link"
+  // site feature — always a page.
+  const type = metadata?.type === 'link' ? 'link' : 'page';
+  // A link site has no uploaded content, so there's nothing to export and
+  // no source shape to report.
+  let sourceKind = null;
+  if (type === 'page') {
+    sourceKind =
+      metadata?.sourceKind === 'html' || metadata?.sourceKind === 'zip'
+        ? metadata.sourceKind
+        : await inferSourceKind(root);
+  }
+
   return {
     pathId,
-    // Absent/unrecognized `type` means this record predates the "link"
-    // site feature — always a page.
-    type: metadata?.type === 'link' ? 'link' : 'page',
+    type,
     title:
       typeof metadata?.title === 'string' && metadata.title
         ? metadata.title
@@ -90,6 +116,7 @@ async function describeSite(pathId, root) {
         : '',
     uploadedAt: metadata?.uploadedAt || stats.mtime.toISOString(),
     sizeBytes,
+    sourceKind,
     enabled: metadata?.enabled !== false,
     sortOrder: normalizeSortOrder(metadata?.sortOrder),
   };
@@ -208,7 +235,7 @@ export function createSiteService(config) {
 
     const metadata = {
       ...existingMetadata,
-      schemaVersion: 5,
+      schemaVersion: 6,
       pathId,
       type: isLink ? 'link' : 'page',
       title: normalizedTitle,
@@ -238,7 +265,7 @@ export function createSiteService(config) {
     ]);
     const metadata = {
       ...existingMetadata,
-      schemaVersion: 5,
+      schemaVersion: 6,
       pathId,
       title: site.title,
       description: site.description,
@@ -277,7 +304,7 @@ export function createSiteService(config) {
     ]);
     const metadata = {
       ...existingMetadata,
-      schemaVersion: 5,
+      schemaVersion: 6,
       pathId,
       title: site.title,
       description: site.description,

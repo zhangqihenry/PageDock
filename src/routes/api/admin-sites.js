@@ -43,7 +43,7 @@ function createUploadMiddleware(config) {
 
 export function createAdminSitesRouter(
   config,
-  { siteService, uploadSite, createLinkSite },
+  { siteService, uploadSite, createLinkSite, prepareExport },
 ) {
   const router = Router();
   const upload = createUploadMiddleware(config);
@@ -88,6 +88,25 @@ export function createAdminSitesRouter(
             overwrite,
           });
     res.status(201).json(metadata);
+  });
+
+  // Downloads what the admin originally uploaded — a plain .html file or a
+  // .zip repacked from the extracted tree. A read-only GET, so it needs no
+  // CSRF token, which lets the admin UI point a plain link at it and let the
+  // browser handle the save dialog.
+  router.get('/:pathId/export', async (req, res, next) => {
+    const { filename, stream } = await prepareExport(req.params.pathId);
+    res.attachment(filename);
+    // Deliberately not text/html even for a single-file export: uploaded
+    // markup must never render from under /_pagedock, where the admin
+    // session cookie is scoped. Sites are viewed at /:pathId/ instead.
+    res.type('application/octet-stream');
+
+    stream.on('error', (error) => {
+      stream.unpipe(res);
+      next(error);
+    });
+    stream.pipe(res);
   });
 
   router.patch('/:pathId', upload, verifyCsrfToken, async (req, res) => {

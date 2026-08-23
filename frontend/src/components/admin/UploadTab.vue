@@ -93,18 +93,15 @@ async function submit() {
 
 <template>
   <div>
-    <div class="panel-heading">
-      <h2>{{ locale.t('admin.tabUpload') }}</h2>
-      <p v-if="limits" class="muted">
-        {{
-          locale.t('admin.limits', {
-            upload: formatBytes(limits.maxUploadBytes),
-            extracted: formatBytes(limits.maxExtractedBytes),
-            files: limits.maxZipFiles,
-          })
-        }}
-      </p>
-    </div>
+    <p v-if="limits" class="panel-meta muted">
+      {{
+        locale.t('admin.limits', {
+          upload: formatBytes(limits.maxUploadBytes),
+          extracted: formatBytes(limits.maxExtractedBytes),
+          files: limits.maxZipFiles,
+        })
+      }}
+    </p>
 
     <div class="segmented" role="group">
       <button

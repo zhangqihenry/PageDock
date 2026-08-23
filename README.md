@@ -73,6 +73,7 @@ logic can be added through trusted Express routes built into the image.
 - 首页目录是 Blog 风格，大小标题可在后台自定义 · The homepage catalog has a blog-style layout, with an admin-editable title and subtitle
 - 未登录也可浏览已发布的网页目录 · The published catalog is browsable without logging in
 - 后台可查看上传时间和占用空间，支持替换、删除、启用/停用、排序 · The admin page shows upload time and size, and supports replacing, deleting, enabling/disabling, and reordering sites
+- 已上传的网页可原样导出，单文件网页导出 `.html`，压缩包网页导出 `.zip` · Uploaded sites can be exported in the shape they arrived in — a single-file site as `.html`, an archive site as `.zip`
 - 严格校验上传内容，防止路径穿越、恶意压缩包等风险 · Uploaded content is strictly validated against path traversal, malicious archives, and similar risks
 - 所有数据集中存放在 `/data`，更新镜像或重建容器不丢数据 · All data lives under `/data`, so updating or recreating the container never loses it
 - 预留动态工具扩展位，可为某个网页路径添加专属后端逻辑 · A reserved extension point for adding custom backend logic to a specific site path

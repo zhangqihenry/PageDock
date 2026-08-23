@@ -1,12 +1,20 @@
 # Changelog / 更新日志
 
+## v1.3.0 — 2026-08-23
+
+**EN:**
+- Uploaded pages can now be exported in their original upload format.
+
+**中文：**
+- 已上传的网页现在可以按原本上传的格式导出。
+
 ## v1.2.0 — 2026-08-18
 
 **EN:**
-- Added typography controls for the catalog's title, subtitle, list/grid item text, and footer — fonts, sizes, and spacing, from display settings.
+- Fixed some small bugs and made some small adjustments.
 
 **中文：**
-- 新增目录页大标题、小标题、列表/方块条目文字和页脚的排版自定义选项，包括字体、字号和间距，可在显示设置中调整。
+- 修复了一些小 bug，做了一些小调整。
 
 ## v1.1.1 — 2026-08-17
 

@@ -14,6 +14,7 @@ export const DEFAULT_LOCALE = 'zh';
 const dictionaries = {
   zh: {
     'nav.admin': '登录',
+    'nav.manage': '管理',
     'nav.backToCatalog': '返回目录',
     'nav.logout': '退出管理',
     'nav.toggleTheme': '切换浅色 / 深色主题',
@@ -155,6 +156,8 @@ const dictionaries = {
     'table.saveOrder': '保存排序',
     'table.open': '打开',
     'table.edit': '编辑',
+    'table.exportHtml': '导出 HTML',
+    'table.exportZip': '导出 ZIP',
     'table.delete': '删除',
     'table.disable': '停用',
     'table.enable': '启用',
@@ -193,6 +196,7 @@ const dictionaries = {
     'errorCode.INVALID_PATH_ID':
       '路径标识只能包含字母、数字、连字符和下划线，长度为 1–64 个字符，且不能使用保留名称。',
     'errorCode.INVALID_SITE_STATUS': '网页状态无效。',
+    'errorCode.EXPORT_NOT_AVAILABLE': '网址类型的网页没有可导出的文件。',
     'errorCode.RESERVED_ZIP_FILE': 'ZIP 不能包含 PageDock 的内部元数据文件。',
     'errorCode.INVALID_ZIP_SIZE': 'ZIP 中存在无效的条目大小。',
     'errorCode.INVALID_ZIP_SIGNATURE': '上传文件不是有效的 ZIP 压缩包。',
@@ -221,6 +225,7 @@ const dictionaries = {
   },
   en: {
     'nav.admin': 'Log in',
+    'nav.manage': 'Manage',
     'nav.backToCatalog': 'Back to catalog',
     'nav.logout': 'Log out',
     'nav.toggleTheme': 'Toggle light / dark theme',
@@ -362,6 +367,8 @@ const dictionaries = {
     'table.saveOrder': 'Save order',
     'table.open': 'Open',
     'table.edit': 'Edit',
+    'table.exportHtml': 'Export HTML',
+    'table.exportZip': 'Export ZIP',
     'table.delete': 'Delete',
     'table.disable': 'Disable',
     'table.enable': 'Enable',
@@ -400,6 +407,7 @@ const dictionaries = {
     'errorCode.INVALID_PATH_ID':
       'The path ID may only contain letters, numbers, hyphens, and underscores (1–64 characters), and must not be a reserved name.',
     'errorCode.INVALID_SITE_STATUS': 'The page status is invalid.',
+    'errorCode.EXPORT_NOT_AVAILABLE': 'URL-type pages have no file to export.',
     'errorCode.RESERVED_ZIP_FILE': "The ZIP archive cannot contain PageDock's internal metadata files.",
     'errorCode.INVALID_ZIP_SIZE': 'The ZIP archive contains an entry with an invalid size.',
     'errorCode.INVALID_ZIP_SIGNATURE': 'The uploaded file is not a valid ZIP archive.',

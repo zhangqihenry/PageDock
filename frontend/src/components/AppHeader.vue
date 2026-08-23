@@ -17,6 +17,13 @@ const showBackAndLogout = computed(
   () => route.name === 'admin' && auth.authenticated,
 );
 
+// The same button both signs in and opens the admin area, so its label has
+// to follow the session — calling it "Log in" while already signed in reads
+// as if the session were lost.
+const adminButtonLabel = computed(() =>
+  locale.t(auth.authenticated ? 'nav.manage' : 'nav.admin'),
+);
+
 function handleAdminClick() {
   if (auth.authenticated) {
     router.push('/_pagedock');
@@ -68,7 +75,7 @@ async function handleLogout() {
         </button>
       </template>
       <button v-else type="button" class="btn" @click="handleAdminClick">
-        {{ locale.t('nav.admin') }}
+        {{ adminButtonLabel }}
       </button>
     </div>
 

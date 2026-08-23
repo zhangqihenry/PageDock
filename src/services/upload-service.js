@@ -67,17 +67,22 @@ async function writeMetadata(
   title,
   description,
   version,
+  sourceKind,
   sortOrder,
   sizeBytes,
   enabled,
 ) {
   const metadata = {
-    schemaVersion: 5,
+    schemaVersion: 6,
     pathId,
     type: 'page',
     title,
     description,
     version,
+    // Which of the two accepted upload shapes this site came from — the
+    // extracted files on disk look the same either way, so the export
+    // feature has no other way to hand the admin back what they uploaded.
+    sourceKind,
     sortOrder,
     uploadedAt: new Date().toISOString(),
     sizeBytes,
@@ -114,7 +119,7 @@ async function writeLinkFiles(
   });
 
   const metadata = {
-    schemaVersion: 5,
+    schemaVersion: 6,
     pathId,
     type: 'link',
     title,
@@ -244,6 +249,7 @@ export function createUploadService(config, siteService) {
         normalizedTitle,
         normalizedDescription,
         normalizedVersion,
+        extension === '.zip' ? 'zip' : 'html',
         sortOrder,
         sizeBytes,
         enabled,

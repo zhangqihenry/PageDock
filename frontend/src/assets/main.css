@@ -963,19 +963,12 @@ input[type="range"]:focus-visible {
   padding-top: 1.75rem;
 }
 
-.panel-heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
+/* The active tab already names the panel, so a panel only carries a short
+   hint line (a tally, the upload limits) where one is useful — no repeated
+   heading, and no rule under it competing with the tab strip's own. */
+.panel-meta {
   margin-bottom: 1.4rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.panel-heading h2 {
-  font-size: 1.25rem;
+  font-size: 0.875rem;
 }
 
 /* ---------- Admin: upload / settings forms ---------- */

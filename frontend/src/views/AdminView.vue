@@ -22,6 +22,17 @@ const activeTab = computed(() => {
   return TABS.includes(requested) ? requested : 'sites';
 });
 
+// The panels don't repeat their tab's name as a visible heading, so the
+// active tab's label is what names the region for assistive tech.
+const TAB_LABEL_KEYS = {
+  sites: 'admin.tabSites',
+  upload: 'admin.tabUpload',
+  settings: 'admin.tabSettings',
+};
+const activeTabLabel = computed(() =>
+  locale.t(TAB_LABEL_KEYS[activeTab.value]),
+);
+
 function selectTab(tab) {
   router.replace({ path: '/_pagedock', query: tab === 'sites' ? {} : { tab } });
 }
@@ -69,7 +80,7 @@ watch(() => auth.ready, guard);
         </button>
       </nav>
 
-      <section class="admin-panel">
+      <section class="admin-panel" :aria-label="activeTabLabel">
         <SitesTab v-if="activeTab === 'sites'" />
         <UploadTab v-else-if="activeTab === 'upload'" @uploaded="selectTab('sites')" />
         <SettingsTab v-else-if="activeTab === 'settings'" />

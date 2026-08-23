@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import AppFooter from './components/AppFooter.vue';
 import LoginModal from './components/LoginModal.vue';
@@ -15,6 +15,19 @@ onMounted(() => {
   catalog.fetch();
   auth.fetchSession();
 });
+
+// The browser tab follows the catalog's own big title (admin-editable in
+// Settings) rather than the fixed placeholder baked into index.html, so a
+// renamed catalog is named the same everywhere.
+watch(
+  () => catalog.settings.title,
+  (title) => {
+    if (title) {
+      document.title = title;
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

@@ -40,10 +40,6 @@ async function submit() {
 
 <template>
   <div>
-    <div class="panel-heading">
-      <h2>{{ locale.t('admin.tabSettings') }}</h2>
-    </div>
-
     <p v-if="error" class="alert alert-error" role="alert">{{ error }}</p>
     <p v-else-if="saved" class="alert alert-success" role="status">
       {{ locale.t('settings.saved') }}

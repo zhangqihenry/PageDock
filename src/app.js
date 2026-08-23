@@ -20,6 +20,7 @@ import {
 } from './routes/tools/index.js';
 import { createSiteService } from './services/site-service.js';
 import { createSettingsService } from './services/settings-service.js';
+import { createExportService } from './services/export-service.js';
 import { createUploadService } from './services/upload-service.js';
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -59,6 +60,7 @@ export async function createApp(options = {}) {
   await siteService.initialize();
   const settingsService = createSettingsService(config);
   const { uploadSite, createLinkSite } = createUploadService(config, siteService);
+  const { prepareExport } = createExportService(siteService);
 
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
@@ -118,7 +120,12 @@ export async function createApp(options = {}) {
   app.use('/_pagedock/api/auth', createAuthApiRouter(config));
   app.use(
     '/_pagedock/api/admin/sites',
-    createAdminSitesRouter(config, { siteService, uploadSite, createLinkSite }),
+    createAdminSitesRouter(config, {
+      siteService,
+      uploadSite,
+      createLinkSite,
+      prepareExport,
+    }),
   );
   app.use(
     '/_pagedock/api/admin/settings',
@@ -150,6 +157,12 @@ export async function createApp(options = {}) {
   app.use(errorHandler);
 
   app.locals.config = config;
-  app.locals.services = { siteService, settingsService, uploadSite, createLinkSite };
+  app.locals.services = {
+    siteService,
+    settingsService,
+    uploadSite,
+    createLinkSite,
+    prepareExport,
+  };
   return app;
 }

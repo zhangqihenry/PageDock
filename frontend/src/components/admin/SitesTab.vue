@@ -92,6 +92,13 @@ async function remove(site) {
   }
 }
 
+// A plain link rather than a fetch: the endpoint answers with
+// Content-Disposition: attachment, and the admin session cookie is scoped to
+// /_pagedock, so the browser's own download handling does the whole job.
+function exportHref(site) {
+  return `/_pagedock/api/admin/sites/${site.pathId}/export`;
+}
+
 function openEdit(site) {
   editingSite.value = site;
 }
@@ -105,12 +112,9 @@ async function handleSaved() {
 
 <template>
   <div>
-    <div class="panel-heading">
-      <h2>{{ locale.t('admin.tabSites') }}</h2>
-      <p v-if="loaded" class="muted">
-        {{ locale.t('catalog.tally', { count: sites.length }) }}
-      </p>
-    </div>
+    <p v-if="loaded" class="panel-meta muted">
+      {{ locale.t('catalog.tally', { count: sites.length }) }}
+    </p>
 
     <p v-if="error" class="alert alert-error" role="alert">{{ error }}</p>
     <p v-else-if="message" class="alert alert-success" role="status">{{ message }}</p>
@@ -182,6 +186,15 @@ async function handleSaved() {
               <button type="button" class="btn" @click="openEdit(site)">
                 {{ locale.t('table.edit') }}
               </button>
+              <a
+                v-if="site.type !== 'link'"
+                class="btn"
+                :href="exportHref(site)"
+              >{{
+                locale.t(
+                  site.sourceKind === 'zip' ? 'table.exportZip' : 'table.exportHtml',
+                )
+              }}</a>
               <button type="button" class="btn" @click="toggleVisibility(site)">
                 {{ locale.t(site.enabled ? 'table.disable' : 'table.enable') }}
               </button>
