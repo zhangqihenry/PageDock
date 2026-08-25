@@ -72,6 +72,7 @@ logic can be added through trusted Express routes built into the image.
 - 每个网页拥有独立的访问路径，可直接分享，如 `/sample/` · Each site gets its own shareable path, e.g. `/sample/`
 - 首页目录是 Blog 风格，大小标题可在后台自定义 · The homepage catalog has a blog-style layout, with an admin-editable title and subtitle
 - 未登录也可浏览已发布的网页目录 · The published catalog is browsable without logging in
+- 页脚展示访问量：今日、近 7 日和总计 · The footer shows page-view counts for today, the last 7 days, and all time
 - 后台可查看上传时间和占用空间，支持替换、删除、启用/停用、排序 · The admin page shows upload time and size, and supports replacing, deleting, enabling/disabling, and reordering sites
 - 已上传的网页可原样导出，单文件网页导出 `.html`，压缩包网页导出 `.zip` · Uploaded sites can be exported in the shape they arrived in — a single-file site as `.html`, an archive site as `.zip`
 - 严格校验上传内容，防止路径穿越、恶意压缩包等风险 · Uploaded content is strictly validated against path traversal, malicious archives, and similar risks
@@ -148,6 +149,13 @@ other method of producing a random string:
 ```bash
 openssl rand -base64 48
 ```
+
+访问量统计按容器所在时区划分「今日」，默认是 UTC。想按本地时区统计，在
+`environment` 里加上标准的 `TZ` 变量即可，例如 `TZ=Asia/Shanghai`。
+
+Page views are bucketed by day in the container's timezone, which defaults
+to UTC. Add the standard `TZ` variable to `environment` — for example
+`TZ=Asia/Shanghai` — to bucket them in your own timezone instead.
 
 ## 部署 / Deployment
 

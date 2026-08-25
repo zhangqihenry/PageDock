@@ -20,6 +20,7 @@ import {
 } from './routes/tools/index.js';
 import { createSiteService } from './services/site-service.js';
 import { createSettingsService } from './services/settings-service.js';
+import { createStatsService } from './services/stats-service.js';
 import { createExportService } from './services/export-service.js';
 import { createUploadService } from './services/upload-service.js';
 
@@ -59,6 +60,8 @@ export async function createApp(options = {}) {
   const siteService = createSiteService(config);
   await siteService.initialize();
   const settingsService = createSettingsService(config);
+  const statsService = createStatsService(config);
+  await statsService.initialize();
   const { uploadSite, createLinkSite } = createUploadService(config, siteService);
   const { prepareExport } = createExportService(siteService);
 
@@ -85,7 +88,7 @@ export async function createApp(options = {}) {
     '/_pagedock/api/catalog',
     helmet(managementSecurityOptions(config)),
     createCatalogRouter(
-      { siteService, settingsService },
+      { siteService, settingsService, statsService },
       { version: packageVersion },
     ),
   );
@@ -145,7 +148,22 @@ export async function createApp(options = {}) {
     },
   );
 
-  app.use(createSiteDispatcher(siteService));
+  app.use(
+    createSiteDispatcher(siteService, {
+      onPageView: () => statsService.record(),
+    }),
+  );
+
+  // The catalog homepage is the SPA shell served at exactly `/`, so it's
+  // counted here rather than inside that middleware, which also answers
+  // /_pagedock and every unknown path. Client-side route changes within
+  // the running app never reach the server and aren't views.
+  app.get('/', (req, _res, next) => {
+    if (req.method === 'GET') {
+      statsService.record();
+    }
+    next();
+  });
 
   // Anything that reaches this point is neither a static asset, a JSON API
   // route, a dynamic tool route, nor a published site — serve the SPA shell
@@ -160,6 +178,7 @@ export async function createApp(options = {}) {
   app.locals.services = {
     siteService,
     settingsService,
+    statsService,
     uploadSite,
     createLinkSite,
     prepareExport,

@@ -1,5 +1,13 @@
 # Changelog / 更新日志
 
+## v1.4.0 — 2026-08-25
+
+**EN:**
+- The footer now shows page views for today, the last 7 days, and all time.
+
+**中文：**
+- 页脚新增访问量统计，显示今日、近 7 日和总计。
+
 ## v1.3.0 — 2026-08-23
 
 **EN:**

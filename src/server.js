@@ -10,6 +10,11 @@ try {
 
   function shutdown(signal) {
     console.log(`${signal} received, shutting down`);
+    // View counters are batched in memory between disk flushes; write the
+    // last few out before the process goes away.
+    app.locals.services.statsService.flush().catch((error) => {
+      console.error(error);
+    });
     server.close((error) => {
       if (error) {
         console.error(error);

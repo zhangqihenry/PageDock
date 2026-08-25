@@ -24,6 +24,10 @@ const dictionaries = {
 
     'footer.poweredBy': 'PageDock 强力驱动',
     'footer.author': '作者 Henry',
+    'footer.visits': '访问量',
+    'footer.visitsToday': ({ count }) => `今日 ${count}`,
+    'footer.visitsWeek': ({ count }) => `近 7 日 ${count}`,
+    'footer.visitsTotal': ({ count }) => `总计 ${count}`,
 
     'displaySettings.modalTitle': '显示设置',
     'displaySettings.appearance': '外观',
@@ -235,6 +239,10 @@ const dictionaries = {
 
     'footer.poweredBy': 'Powered by PageDock',
     'footer.author': 'by Henry',
+    'footer.visits': 'Views',
+    'footer.visitsToday': ({ count }) => `Today ${count}`,
+    'footer.visitsWeek': ({ count }) => `Last 7 days ${count}`,
+    'footer.visitsTotal': ({ count }) => `Total ${count}`,
 
     'displaySettings.modalTitle': 'Display settings',
     'displaySettings.appearance': 'Appearance',

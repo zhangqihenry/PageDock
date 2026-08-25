@@ -25,3 +25,13 @@ export function formatBytes(bytes) {
   const precision = index === 0 || value >= 10 ? 0 : 1;
   return `${value.toFixed(precision)} ${units[index]}`;
 }
+
+// Page-view counters. Grouping is fixed to en-US so the thousands
+// separator looks the same in both UI languages.
+export function formatCount(value) {
+  const count = Number(value);
+  if (!Number.isFinite(count) || count <= 0) {
+    return '0';
+  }
+  return Math.round(count).toLocaleString('en-US');
+}

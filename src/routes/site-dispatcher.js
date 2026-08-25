@@ -23,7 +23,15 @@ function splitRequestUrl(requestUrl) {
   }
 }
 
-export function createSiteDispatcher(siteService) {
+// A visit is the document a person navigated to — `/<site>/` (or any
+// nested directory index) and explicit .html files. The stylesheets,
+// scripts, and images that page then pulls in belong to the same visit,
+// so counting them would multiply one page load into a dozen views.
+function isDocumentRequest(remainder) {
+  return remainder.endsWith('/') || /\.html?$/i.test(remainder);
+}
+
+export function createSiteDispatcher(siteService, { onPageView = null } = {}) {
   const middlewareCache = new Map();
 
   function staticMiddleware(pathId) {
@@ -74,6 +82,18 @@ export function createSiteDispatcher(siteService) {
     req.url = `${parsed.remainder}${parsed.query}`;
     res.once('finish', () => {
       req.url = originalUrl;
+      // Counted once the response is out and known to be a hit — a 404 for
+      // a missing page inside the site isn't a view, but a 304 for a
+      // revalidated one is. HEAD probes (uptime checks, link previews)
+      // aren't someone reading the page.
+      if (
+        onPageView &&
+        req.method === 'GET' &&
+        res.statusCode < 400 &&
+        isDocumentRequest(parsed.remainder)
+      ) {
+        onPageView();
+      }
     });
     staticMiddleware(parsed.pathId)(req, res, (error) => {
       req.url = originalUrl;
