@@ -1,11 +1,11 @@
 # Changelog / 更新日志
 
-## Unreleased / 未发布
+## v1.5.0 — 2026-09-24
 
 **EN:**
 - Pages can require a password of at least six characters to open.
-- Split the homepage into Regular and Protected tabs, defaulting to Regular.
-- Generate a random six-character lowercase letter/digit path when the path is blank.
+- The homepage now has Regular and Protected tabs, showing Regular by default.
+- Leaving the path blank generates a random six-character path of digits and lowercase letters.
 
 **中文：**
 - 上传时可设置至少 6 位的访问密码，访问网页需输入密码。
