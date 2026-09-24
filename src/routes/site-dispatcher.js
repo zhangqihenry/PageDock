@@ -2,7 +2,7 @@ import express from 'express';
 import { notFoundHandler } from '../middleware/error-handler.js';
 import { isValidPathId } from '../utils/path-id.js';
 
-function splitRequestUrl(requestUrl) {
+export function splitRequestUrl(requestUrl) {
   const queryIndex = requestUrl.indexOf('?');
   const rawPath =
     queryIndex === -1 ? requestUrl : requestUrl.slice(0, queryIndex);
@@ -47,7 +47,7 @@ export function createSiteDispatcher(siteService, { onPageView = null } = {}) {
           redirect: false,
           setHeaders(res, filePath) {
             res.setHeader('X-Content-Type-Options', 'nosniff');
-            if (filePath.endsWith('index.html')) {
+            if (filePath.endsWith('index.html') && !res.getHeader('Cache-Control')) {
               res.setHeader('Cache-Control', 'no-cache');
             }
           },

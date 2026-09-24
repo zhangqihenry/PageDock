@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { AppError } from '../errors.js';
 import { assertValidPathId, isValidPathId } from '../utils/path-id.js';
 import {
@@ -10,6 +11,7 @@ import {
   normalizeVersion,
 } from '../utils/metadata-fields.js';
 import { renderLinkRedirectHtml } from '../utils/link-redirect-page.js';
+import { resolvePasswordHash, siteResponse } from '../utils/site-password.js';
 
 const METADATA_FILE = '.pagedock.json';
 
@@ -65,19 +67,24 @@ async function readMetadata(siteRoot) {
     const raw = await fs.readFile(path.join(siteRoot, METADATA_FILE), 'utf8');
     return JSON.parse(raw);
   } catch (error) {
-    if (error.code === 'ENOENT' || error instanceof SyntaxError) {
+    if (error.code === 'ENOENT') {
       return null;
     }
     throw error;
   }
 }
 
-async function writeMetadata(siteRoot, metadata) {
-  await fs.writeFile(
-    path.join(siteRoot, METADATA_FILE),
-    `${JSON.stringify(metadata, null, 2)}\n`,
-    'utf8',
-  );
+async function writeMetadata(siteRoot, metadata, stagingDir) {
+  // An access check must never observe a partially written password hash.
+  // Stage outside the site's content tree so concurrent exports cannot
+  // accidentally include credentials from the temporary file.
+  const temporary = path.join(stagingDir, `.pagedock-${crypto.randomUUID()}.tmp`);
+  try {
+    await fs.writeFile(temporary, `${JSON.stringify(metadata, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
+    await fs.rename(temporary, path.join(siteRoot, METADATA_FILE));
+  } finally {
+    await fs.rm(temporary, { force: true });
+  }
 }
 
 async function describeSite(pathId, root) {
@@ -118,6 +125,7 @@ async function describeSite(pathId, root) {
     sizeBytes,
     sourceKind,
     enabled: metadata?.enabled !== false,
+    passwordProtected: Boolean(metadata?.passwordHash),
     sortOrder: normalizeSortOrder(metadata?.sortOrder),
   };
 }
@@ -163,6 +171,16 @@ export function createSiteService(config) {
     return metadata?.enabled !== false;
   }
 
+  // Private metadata for the access gate; the hash never leaves the server.
+  async function getAccess(pathId) {
+    if (!(await exists(pathId))) return null;
+    const metadata = await readMetadata(siteRoot(pathId));
+    return {
+      enabled: metadata?.enabled !== false,
+      passwordHash: metadata?.passwordHash || null,
+    };
+  }
+
   async function list({ includeDisabled = false } = {}) {
     const entries = await fs.readdir(config.sitesDir, { withFileTypes: true });
     const sites = [];
@@ -200,7 +218,7 @@ export function createSiteService(config) {
     return describeSite(pathId, root);
   }
 
-  async function update(pathId, { title, description, version, linkUrl }) {
+  async function update(pathId, { title, description, version, linkUrl, ...protection }) {
     const root = siteRoot(pathId);
     if (!(await exists(pathId))) {
       throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
@@ -211,6 +229,7 @@ export function createSiteService(config) {
     const normalizedVersion = normalizeVersion(version);
 
     const existingMetadata = await readMetadata(root);
+    const passwordHash = await resolvePasswordHash(existingMetadata?.passwordHash, protection);
     // A site's type is fixed at creation and never trusted from the
     // request — it's read back from what's already on disk, so editing
     // can't be used to flip a page into a link or vice versa.
@@ -235,7 +254,7 @@ export function createSiteService(config) {
 
     const metadata = {
       ...existingMetadata,
-      schemaVersion: 6,
+      schemaVersion: 7,
       pathId,
       type: isLink ? 'link' : 'page',
       title: normalizedTitle,
@@ -243,12 +262,13 @@ export function createSiteService(config) {
       version: normalizedVersion,
       uploadedAt: existingMetadata?.uploadedAt || stats.mtime.toISOString(),
       sizeBytes,
+      passwordHash,
     };
     if (isLink) {
       metadata.linkUrl = normalizedLinkUrl;
     }
-    await writeMetadata(root, metadata);
-    return metadata;
+    await writeMetadata(root, metadata, config.stagingDir);
+    return siteResponse(metadata);
   }
 
   async function setSortOrder(pathId, sortOrder) {
@@ -265,7 +285,7 @@ export function createSiteService(config) {
     ]);
     const metadata = {
       ...existingMetadata,
-      schemaVersion: 6,
+      schemaVersion: 7,
       pathId,
       title: site.title,
       description: site.description,
@@ -275,8 +295,8 @@ export function createSiteService(config) {
       sizeBytes: site.sizeBytes,
       enabled: site.enabled,
     };
-    await writeMetadata(root, metadata);
-    return metadata;
+    await writeMetadata(root, metadata, config.stagingDir);
+    return siteResponse(metadata);
   }
 
   // Saves every row of the admin table's sort-order column in one go.
@@ -304,7 +324,7 @@ export function createSiteService(config) {
     ]);
     const metadata = {
       ...existingMetadata,
-      schemaVersion: 6,
+      schemaVersion: 7,
       pathId,
       title: site.title,
       description: site.description,
@@ -314,8 +334,8 @@ export function createSiteService(config) {
       sizeBytes: site.sizeBytes,
       enabled: Boolean(enabled),
     };
-    await writeMetadata(root, metadata);
-    return metadata;
+    await writeMetadata(root, metadata, config.stagingDir);
+    return siteResponse(metadata);
   }
 
   async function remove(pathId) {
@@ -330,6 +350,7 @@ export function createSiteService(config) {
     initialize,
     exists,
     isPublished,
+    getAccess,
     list,
     get,
     update,

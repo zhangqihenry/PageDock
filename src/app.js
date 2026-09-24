@@ -9,6 +9,7 @@ import { loadConfig } from './config.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { exposeCsrfToken } from './middleware/csrf.js';
 import { createSpaShellMiddleware } from './middleware/spa-shell.js';
+import { createSiteAccess } from './middleware/site-access.js';
 import { createCatalogRouter } from './routes/api/catalog.js';
 import { createAuthApiRouter } from './routes/api/auth.js';
 import { createAdminSitesRouter } from './routes/api/admin-sites.js';
@@ -64,6 +65,8 @@ export async function createApp(options = {}) {
   await statsService.initialize();
   const { uploadSite, createLinkSite } = createUploadService(config, siteService);
   const { prepareExport } = createExportService(siteService);
+  const dynamicTools = options.dynamicTools || defaultDynamicTools;
+  const siteAccess = createSiteAccess(config, siteService, dynamicTools);
 
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
@@ -121,6 +124,7 @@ export async function createApp(options = {}) {
   app.use('/_pagedock/api', express.json({ limit: '32kb' }));
   app.use('/_pagedock/api', exposeCsrfToken);
   app.use('/_pagedock/api/auth', createAuthApiRouter(config));
+  app.use('/_pagedock/api/site-access', siteAccess.router);
   app.use(
     '/_pagedock/api/admin/sites',
     createAdminSitesRouter(config, {
@@ -137,9 +141,10 @@ export async function createApp(options = {}) {
   // Anything else under /_pagedock/api is an unknown JSON endpoint.
   app.use('/_pagedock/api', notFoundHandler);
 
+  app.use(siteAccess.guard);
   registerDynamicTools(
     app,
-    options.dynamicTools || defaultDynamicTools,
+    dynamicTools,
     {
       config,
       dataDir: config.dataDir,

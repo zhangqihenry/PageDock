@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useCatalogStore } from '../stores/catalog.js';
 import { useDisplayStore } from '../stores/display.js';
 import { useLocaleStore } from '../stores/locale.js';
@@ -10,6 +10,23 @@ const catalog = useCatalogStore();
 const display = useDisplayStore();
 const typography = useTypographyStore();
 const locale = useLocaleStore();
+const activeTab = ref('regular');
+const visibleSites = computed(() => catalog.sites.filter(
+  (site) => Boolean(site.passwordProtected) === (activeTab.value === 'protected'),
+));
+const tabs = ['regular', 'protected'];
+
+function moveTab(event, index) {
+  let next = index;
+  if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+  else if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
+  else if (event.key === 'Home') next = 0;
+  else if (event.key === 'End') next = tabs.length - 1;
+  else return;
+  event.preventDefault();
+  activeTab.value = tabs[next];
+  document.getElementById(`catalog-tab-${tabs[next]}`)?.focus();
+}
 
 onMounted(() => {
   if (!catalog.loaded) {
@@ -18,7 +35,7 @@ onMounted(() => {
 });
 
 function siteHref(site) {
-  return site.type === 'link' ? site.linkUrl : `/${site.pathId}/`;
+  return site.type === 'link' && !site.passwordProtected ? site.linkUrl : `/${site.pathId}/`;
 }
 
 // .wrap's usual top padding is meant for pages without their own hero
@@ -78,27 +95,90 @@ const showIntroDivider = computed(
         <p class="lede" :style="subtitleStyle">{{ catalog.settings.subtitle }}</p>
       </section>
 
-      <section v-if="catalog.sites.length === 0" class="empty">
-        <p>{{ locale.t('catalog.empty') }}</p>
-      </section>
+      <div class="catalog-tabs segmented" role="tablist" :aria-label="locale.t('catalog.tabsLabel')">
+        <button
+          v-for="(tab, index) in tabs"
+          :id="`catalog-tab-${tab}`"
+          :key="tab"
+          type="button"
+          role="tab"
+          class="segmented-option"
+          :class="{ 'is-active': activeTab === tab }"
+          :aria-selected="activeTab === tab"
+          aria-controls="catalog-panel"
+          :tabindex="activeTab === tab ? 0 : -1"
+          @click="activeTab = tab"
+          @keydown="moveTab($event, index)"
+        >{{ locale.t(`catalog.${tab}`) }}</button>
+      </div>
 
-      <section
-        v-else-if="display.layout === 'table'"
-        class="list"
-        :style="listStyle"
-        :aria-label="locale.t('catalog.listLabel')"
-      >
-        <a
-          v-for="(site, index) in catalog.sites"
-          :key="site.pathId"
-          class="row"
-          :href="siteHref(site)"
-          target="_blank"
-          rel="noopener noreferrer"
+      <div id="catalog-panel" role="tabpanel" :aria-labelledby="`catalog-tab-${activeTab}`" tabindex="0">
+        <section v-if="visibleSites.length === 0" class="empty">
+          <p>{{ locale.t(catalog.sites.length === 0 ? 'catalog.empty' : `catalog.empty${activeTab === 'protected' ? 'Protected' : 'Regular'}`) }}</p>
+        </section>
+
+        <section
+          v-else-if="display.layout === 'table'"
+          class="list"
+          :style="listStyle"
+          :aria-label="locale.t('catalog.listLabel')"
         >
-          <span class="row-index">{{ String(index + 1).padStart(2, '0') }}</span>
-          <span class="row-main">
-            <span class="row-title">
+          <a
+            v-for="(site, index) in visibleSites"
+            :key="site.pathId"
+            class="row"
+            :href="siteHref(site)"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span class="row-index">{{ String(index + 1).padStart(2, '0') }}</span>
+            <span class="row-main">
+              <span class="row-title">
+                {{ site.title }}
+                <svg
+                  v-if="site.type === 'link'"
+                  class="external-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  :aria-label="locale.t('catalog.externalLink')"
+                >
+                  <path d="M7 17L17 7M17 7H9M17 7V15" />
+                </svg>
+              </span>
+              <span class="row-desc">{{
+                site.description || locale.t('common.noDescription')
+              }}</span>
+              <span class="row-meta">
+                <span v-if="site.version" class="mono">{{
+                  locale.t('common.versionTag', { version: site.version })
+                }}</span>
+                <span>{{ formatUploadedAt(site.uploadedAt) }}</span>
+              </span>
+            </span>
+            <span class="row-path mono">/{{ site.pathId }}/</span>
+            <span class="row-open">{{ locale.t('catalog.open') }}</span>
+          </a>
+        </section>
+
+        <section
+          v-else
+          class="grid"
+          :style="gridStyle"
+          :aria-label="locale.t('catalog.listLabel')"
+        >
+          <a
+            v-for="site in visibleSites"
+            :key="site.pathId"
+            class="tile"
+            :href="siteHref(site)"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span class="tile-title">
               {{ site.title }}
               <svg
                 v-if="site.type === 'link'"
@@ -114,71 +194,32 @@ const showIntroDivider = computed(
                 <path d="M7 17L17 7M17 7H9M17 7V15" />
               </svg>
             </span>
-            <span class="row-desc">{{
+            <span class="tile-desc">{{
               site.description || locale.t('common.noDescription')
             }}</span>
-            <span class="row-meta">
-              <span v-if="site.version" class="mono">{{
-                locale.t('common.versionTag', { version: site.version })
-              }}</span>
-              <span>{{ formatUploadedAt(site.uploadedAt) }}</span>
+            <span class="tile-foot">
+              <span class="tile-meta">
+                <span v-if="site.version" class="mono">{{
+                  locale.t('common.versionTag', { version: site.version })
+                }}</span>
+                <span>{{ formatUploadedAt(site.uploadedAt) }}</span>
+              </span>
+              <span class="tile-path mono">/{{ site.pathId }}/</span>
             </span>
-          </span>
-          <span class="row-path mono">/{{ site.pathId }}/</span>
-          <span class="row-open">{{ locale.t('catalog.open') }}</span>
-        </a>
-      </section>
+          </a>
+        </section>
 
-      <section
-        v-else
-        class="grid"
-        :style="gridStyle"
-        :aria-label="locale.t('catalog.listLabel')"
-      >
-        <a
-          v-for="site in catalog.sites"
-          :key="site.pathId"
-          class="tile"
-          :href="siteHref(site)"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span class="tile-title">
-            {{ site.title }}
-            <svg
-              v-if="site.type === 'link'"
-              class="external-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              :aria-label="locale.t('catalog.externalLink')"
-            >
-              <path d="M7 17L17 7M17 7H9M17 7V15" />
-            </svg>
-          </span>
-          <span class="tile-desc">{{
-            site.description || locale.t('common.noDescription')
-          }}</span>
-          <span class="tile-foot">
-            <span class="tile-meta">
-              <span v-if="site.version" class="mono">{{
-                locale.t('common.versionTag', { version: site.version })
-              }}</span>
-              <span>{{ formatUploadedAt(site.uploadedAt) }}</span>
-            </span>
-            <span class="tile-path mono">/{{ site.pathId }}/</span>
-          </span>
-        </a>
-      </section>
-
-      <p class="tally">
-        {{ locale.t('catalog.tally', { count: catalog.sites.length }) }}
-      </p>
+        <p class="tally">
+          {{ locale.t('catalog.tally', { count: visibleSites.length }) }}
+        </p>
+      </div>
     </template>
 
     <p v-else class="muted">{{ locale.t('common.loading') }}</p>
   </main>
 </template>
+
+<style scoped>
+.catalog-tabs { margin-block: 1.25rem; }
+.catalog-tabs button { font-size: var(--type-control); line-height: 1.5; }
+</style>

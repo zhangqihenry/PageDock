@@ -4,6 +4,7 @@ import { api } from '../../api/client.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useLocaleStore } from '../../stores/locale.js';
 import { describeError } from '../../utils/errors.js';
+import PasswordFields from './PasswordFields.vue';
 
 const props = defineProps({
   site: { type: Object, default: null },
@@ -13,7 +14,7 @@ const emit = defineEmits(['close', 'saved']);
 const auth = useAuthStore();
 const locale = useLocaleStore();
 
-const form = reactive({ title: '', version: '', description: '', linkUrl: '' });
+const form = reactive({ title: '', version: '', description: '', linkUrl: '', passwordProtected: false, password: '' });
 const fileInput = ref(null);
 const submitting = ref(false);
 const error = ref('');
@@ -29,6 +30,8 @@ watch(
     form.version = site.version;
     form.description = site.description;
     form.linkUrl = site.linkUrl || '';
+    form.passwordProtected = Boolean(site.passwordProtected);
+    form.password = '';
     error.value = '';
     submitting.value = false;
     if (fileInput.value) {
@@ -51,6 +54,8 @@ async function submit() {
     body.append('title', form.title);
     body.append('version', form.version);
     body.append('description', form.description);
+    body.append('passwordProtected', String(form.passwordProtected));
+    if (form.passwordProtected) body.append('password', form.password);
     if (props.site.type === 'link') {
       body.append('linkUrl', form.linkUrl);
     } else {
@@ -163,6 +168,11 @@ function onKeydown(event) {
             </label>
             <p class="muted edit-hint">{{ locale.t('edit.replaceFileHint') }}</p>
           </template>
+          <PasswordFields
+            v-model:enabled="form.passwordProtected"
+            v-model:password="form.password"
+            :can-keep-password="site.passwordProtected"
+          />
           <button type="submit" class="btn-solid btn-block" :disabled="submitting">
             {{ locale.t('edit.save') }}
           </button>

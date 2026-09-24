@@ -12,6 +12,7 @@ import {
   normalizeVersion,
 } from '../utils/metadata-fields.js';
 import { renderLinkRedirectHtml } from '../utils/link-redirect-page.js';
+import { resolvePasswordHash, siteResponse } from '../utils/site-password.js';
 import { extractZipSafely } from './zip-service.js';
 
 const ACCEPTED_MIME_TYPES = Object.freeze({
@@ -71,9 +72,10 @@ async function writeMetadata(
   sortOrder,
   sizeBytes,
   enabled,
+  passwordHash,
 ) {
   const metadata = {
-    schemaVersion: 6,
+    schemaVersion: 7,
     pathId,
     type: 'page',
     title,
@@ -87,6 +89,7 @@ async function writeMetadata(
     uploadedAt: new Date().toISOString(),
     sizeBytes,
     enabled,
+    passwordHash,
   };
   await fs.writeFile(
     path.join(stagingRoot, '.pagedock.json'),
@@ -111,6 +114,7 @@ async function writeLinkFiles(
   linkUrl,
   sortOrder,
   enabled,
+  passwordHash,
 ) {
   const html = renderLinkRedirectHtml(title, linkUrl);
   await fs.writeFile(path.join(stagingRoot, 'index.html'), html, {
@@ -119,7 +123,7 @@ async function writeLinkFiles(
   });
 
   const metadata = {
-    schemaVersion: 6,
+    schemaVersion: 7,
     pathId,
     type: 'link',
     title,
@@ -130,6 +134,7 @@ async function writeLinkFiles(
     uploadedAt: new Date().toISOString(),
     sizeBytes: Buffer.byteLength(html, 'utf8'),
     enabled,
+    passwordHash,
   };
   await fs.writeFile(
     path.join(stagingRoot, '.pagedock.json'),
@@ -172,13 +177,41 @@ async function promoteStagingDirectory(stagingRoot, targetRoot, overwrite) {
 }
 
 export function createUploadService(config, siteService) {
-  async function uploadSite({
+  const reservedPaths = new Set();
+  const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
+
+  async function withPathId(options, publish) {
+    if (String(options.pathId ?? '').trim()) return publish(options);
+    // Reserve before the first await so simultaneous automatic uploads
+    // cannot pick the same path. Check directories even if unpublished.
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const pathId = Array.from({ length: 6 }, () => alphabet[crypto.randomInt(36)]).join('');
+      if (reservedPaths.has(pathId)) continue;
+      reservedPaths.add(pathId);
+      try {
+        try {
+          await fs.lstat(siteService.siteRoot(pathId));
+          continue;
+        } catch (error) {
+          if (error.code !== 'ENOENT') throw error;
+        }
+        return await publish({ ...options, pathId, overwrite: false });
+      } finally {
+        reservedPaths.delete(pathId);
+      }
+    }
+    throw new AppError('暂时无法生成访问路径，请重试。', 503, 'PATH_GENERATION_FAILED');
+  }
+
+  async function uploadToPath({
     pathId,
     title,
     description,
     version,
     file,
     overwrite = false,
+    passwordProtected,
+    password,
   }) {
     assertValidPathId(pathId);
     const normalizedTitle = normalizeTitle(title);
@@ -202,6 +235,9 @@ export function createUploadService(config, siteService) {
       enabled = existing.enabled;
       sortOrder = existing.sortOrder;
     }
+
+    const existingAccess = overwrite ? await siteService.getAccess(pathId) : null;
+    const passwordHash = await resolvePasswordHash(existingAccess?.passwordHash, { passwordProtected, password });
 
     await fs.mkdir(stagingRoot, { recursive: false });
 
@@ -253,10 +289,11 @@ export function createUploadService(config, siteService) {
         sortOrder,
         sizeBytes,
         enabled,
+        passwordHash,
       );
       await promoteStagingDirectory(stagingRoot, targetRoot, overwrite);
       promoted = true;
-      return metadata;
+      return siteResponse(metadata);
     } finally {
       await fs.rm(file.path, { force: true }).catch(() => {});
       if (!promoted) {
@@ -267,13 +304,15 @@ export function createUploadService(config, siteService) {
 
   // Same shape as uploadSite (validate → stage → promote), but for a "link"
   // site: no file involved, the staged content is a generated redirect page.
-  async function createLinkSite({
+  async function createLinkAtPath({
     pathId,
     title,
     description,
     version,
     linkUrl,
     overwrite = false,
+    passwordProtected,
+    password,
   }) {
     assertValidPathId(pathId);
     const normalizedTitle = normalizeTitle(title);
@@ -295,6 +334,9 @@ export function createUploadService(config, siteService) {
       sortOrder = existing.sortOrder;
     }
 
+    const existingAccess = overwrite ? await siteService.getAccess(pathId) : null;
+    const passwordHash = await resolvePasswordHash(existingAccess?.passwordHash, { passwordProtected, password });
+
     await fs.mkdir(stagingRoot, { recursive: false });
 
     try {
@@ -307,10 +349,11 @@ export function createUploadService(config, siteService) {
         normalizedLinkUrl,
         sortOrder,
         enabled,
+        passwordHash,
       );
       await promoteStagingDirectory(stagingRoot, targetRoot, overwrite);
       promoted = true;
-      return metadata;
+      return siteResponse(metadata);
     } finally {
       if (!promoted) {
         await fs.rm(stagingRoot, { recursive: true, force: true }).catch(() => {});
@@ -318,7 +361,10 @@ export function createUploadService(config, siteService) {
     }
   }
 
-  return { uploadSite, createLinkSite };
+  return {
+    uploadSite: (options) => withPathId(options, uploadToPath),
+    createLinkSite: (options) => withPathId(options, createLinkAtPath),
+  };
 }
 
 export { ACCEPTED_MIME_TYPES };

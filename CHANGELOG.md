@@ -1,5 +1,17 @@
 # Changelog / 更新日志
 
+## Unreleased / 未发布
+
+**EN:**
+- Add optional page passwords, with server-side protection for pages and assets.
+- Split the homepage into Regular and Protected tabs, defaulting to Regular.
+- Generate a random six-character lowercase letter/digit path when the path is blank.
+
+**中文：**
+- 上传时可设置至少 6 位的访问密码，服务端校验网页及其资源的访问权限。
+- 首页新增「常规」「加密」选项卡，默认显示常规网页。
+- 访问路径留空时自动生成 6 位数字和小写字母组成的随机路径。
+
 ## v1.4.0 — 2026-08-25
 
 **EN:**

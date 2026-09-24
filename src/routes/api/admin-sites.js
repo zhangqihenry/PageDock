@@ -78,6 +78,8 @@ export function createAdminSitesRouter(
             version,
             linkUrl: String(req.body.linkUrl || ''),
             overwrite,
+            passwordProtected: req.body.passwordProtected,
+            password: req.body.password,
           })
         : await uploadSite({
             pathId,
@@ -86,6 +88,8 @@ export function createAdminSitesRouter(
             version,
             file: req.file,
             overwrite,
+            passwordProtected: req.body.passwordProtected,
+            password: req.body.password,
           });
     res.status(201).json(metadata);
   });
@@ -124,6 +128,8 @@ export function createAdminSitesRouter(
         version,
         file: req.file,
         overwrite: true,
+        passwordProtected: req.body.passwordProtected,
+        password: req.body.password,
       });
     } else {
       // linkUrl is only applied when the site already on disk is a "link"
@@ -133,6 +139,8 @@ export function createAdminSitesRouter(
         description,
         version,
         linkUrl: String(req.body.linkUrl || ''),
+        passwordProtected: req.body.passwordProtected,
+        password: req.body.password,
       });
     }
     res.json(metadata);

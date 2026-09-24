@@ -39,12 +39,12 @@ PageDock 解决的正是这最后一步：
 PageDock closes exactly that last gap:
 
 1. 让 AI 输出单个 HTML 文件，或者以 `index.html` 为入口的 ZIP。
-2. 登录 PageDock，上传文件，填一个访问路径，比如 `sample`。
+2. 登录 PageDock，上传文件，填写访问路径（如 `sample`），或留空自动生成；需要密码时勾选「加密访问」。
 3. 得到一个可以直接分享的网址：
 
 1. Have the AI output a single HTML file, or a ZIP with `index.html` as
    its entry point.
-2. Log in to PageDock, upload the file, and give it a path, e.g. `sample`.
+2. Log in to PageDock, upload the file, and give it a path (e.g. `sample`) or leave it blank to generate one. Select password-protected access when needed.
 3. Get a shareable URL:
 
 ```text
@@ -70,6 +70,9 @@ logic can be added through trusted Express routes built into the image.
 - 单管理员账号登录，无需注册或多用户体系 · Single admin account login, no sign-up or multi-user system
 - 上传单个 `.html` 文件，或根目录含 `index.html` 的 `.zip` 压缩包 · Upload a single `.html` file, or a `.zip` with `index.html` at its root
 - 每个网页拥有独立的访问路径，可直接分享，如 `/sample/` · Each site gets its own shareable path, e.g. `/sample/`
+- 路径留空时自动生成 6 位随机路径，仅含数字和小写字母，并自动避开已占用路径 · Blank paths generate six random lowercase letters/digits, avoiding occupied paths
+- 上传时可设置访问密码，至少 6 个字符；访问网页及其资源前需要验证密码，编辑时可修改或关闭保护 · Optional passwords of at least six characters protect pages and their assets; edit a page to change or remove its password
+- 首页分为「常规」和「加密」两个选项卡，默认显示常规网页 · The homepage separates regular and protected pages into tabs, with regular pages shown by default
 - 首页目录是 Blog 风格，大小标题可在后台自定义 · The homepage catalog has a blog-style layout, with an admin-editable title and subtitle
 - 未登录也可浏览已发布的网页目录 · The published catalog is browsable without logging in
 - 页脚展示访问量：今日、近 7 日和总计 · The footer shows page-view counts for today, the last 7 days, and all time
@@ -86,6 +89,7 @@ logic can be added through trusted Express routes built into the image.
 | `/` | 公开网页目录（Vue 单页应用） Public site directory (a Vue single-page app) |
 | `/_pagedock/` | 后台管理页面——未登录时通过首页的登录弹窗登录 Admin page — sign in from the login modal on the homepage when signed out |
 | `/_pagedock/api/*` | 支撑首页和后台的 JSON API JSON API backing the homepage and admin page |
+| `/_pagedock/unlock/<site-path>` | 网页访问密码输入页 Page password entry screen |
 | `/_pagedock/health` | 容器健康检查 Container health check |
 | `/<site-path>/` | 网页首页 Site homepage |
 | `/<site-path>/<asset>` | 网页静态资源 Site static asset |
@@ -119,6 +123,18 @@ Only `/data` needs to be mounted as a persistent volume:
 备份时只需要备份整个 `/data` 目录。
 
 Backing up the entire `/data` directory is all you need.
+
+加密访问采用服务端密码验证，密码以加盐哈希保存。解锁权限仅适用于对应网页，
+有效期沿用 `SESSION_TTL_HOURS`（默认 12 小时）；更换密码会立即使原解锁凭据失效。
+替换文件或仅修改标题、说明时保留原保护设置。目录仍会展示加密网页的标题和说明。
+「添加网址」的密码保护适用于 PageDock 的跳转入口，目标网站的访问权限由目标网站控制。
+
+Password-protected access is enforced on the server and stores salted password hashes.
+Unlocking grants access only to that page for `SESSION_TTL_HOURS` (12 hours by default);
+changing the password invalidates previous grants. Replacing files or editing titles and
+descriptions preserves protection. The catalog still displays protected pages' titles and
+descriptions. For URL entries, the password protects the PageDock redirect; the destination
+website controls access to its own content.
 
 ## 配置项 / Configuration
 

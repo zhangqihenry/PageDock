@@ -6,6 +6,7 @@ import { useCatalogStore } from '../../stores/catalog.js';
 import { useLocaleStore } from '../../stores/locale.js';
 import { describeError } from '../../utils/errors.js';
 import { formatBytes } from '../../utils/format.js';
+import PasswordFields from './PasswordFields.vue';
 
 const emit = defineEmits(['uploaded']);
 
@@ -21,6 +22,8 @@ const form = reactive({
   description: '',
   linkUrl: '',
   overwrite: 'false',
+  passwordProtected: false,
+  password: '',
 });
 const fileInput = ref(null);
 const submitting = ref(false);
@@ -45,6 +48,8 @@ function resetForm() {
     description: '',
     linkUrl: '',
     overwrite: 'false',
+    passwordProtected: false,
+    password: '',
   });
   if (fileInput.value) {
     fileInput.value.value = '';
@@ -72,6 +77,8 @@ async function submit() {
     body.append('version', form.version);
     body.append('description', form.description);
     body.append('overwrite', form.overwrite);
+    body.append('passwordProtected', String(form.passwordProtected));
+    if (form.passwordProtected) body.append('password', form.password);
     if (isLink) {
       body.append('type', 'link');
       body.append('linkUrl', form.linkUrl.trim());
@@ -141,8 +148,9 @@ async function submit() {
           :placeholder="locale.t('form.pathPlaceholder')"
           pattern="[A-Za-z0-9_\-]{1,64}"
           maxlength="64"
-          required
+          aria-describedby="path-hint"
         />
+        <span id="path-hint" class="field-hint">{{ locale.t('form.pathHint') }}</span>
       </label>
       <label v-if="form.mode === 'file'">
         {{ locale.t('form.fileLabel') }}
@@ -175,6 +183,7 @@ async function submit() {
           rows="3"
         ></textarea>
       </label>
+      <PasswordFields v-model:enabled="form.passwordProtected" v-model:password="form.password" />
       <fieldset class="fieldset-plain field-wide">
         <legend>{{ locale.t('form.overwriteLegend') }}</legend>
         <label class="radio-option">

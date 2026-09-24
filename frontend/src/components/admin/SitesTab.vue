@@ -136,6 +136,7 @@ async function handleSaved() {
           <div class="site-card-head">
             <span class="site-card-title">{{ site.title }}</span>
             <span class="site-card-path mono">/{{ site.pathId }}/</span>
+            <span v-if="site.passwordProtected" class="site-status-badge">{{ locale.t('catalog.protected') }}</span>
             <span
               v-if="site.type === 'link'"
               class="site-status-badge is-link"
@@ -176,7 +177,7 @@ async function handleSaved() {
               <a
                 v-if="site.enabled"
                 class="btn"
-                :href="site.type === 'link' ? site.linkUrl : `/${site.pathId}/`"
+                :href="site.type === 'link' && !site.passwordProtected ? site.linkUrl : `/${site.pathId}/`"
                 target="_blank"
                 rel="noopener noreferrer"
               >{{ locale.t('table.open') }}</a>

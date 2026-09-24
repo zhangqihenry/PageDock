@@ -20,7 +20,7 @@ export function createCatalogRouter(
     res.json({
       meta: { version },
       settings,
-      sites,
+      sites: sites.map((site) => site.passwordProtected ? { ...site, linkUrl: '' } : site),
       stats: statsService.summary(),
     });
   });

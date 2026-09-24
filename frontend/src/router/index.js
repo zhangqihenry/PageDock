@@ -13,6 +13,11 @@ const router = createRouter({
       name: 'admin',
       component: () => import('../views/AdminView.vue'),
     },
+    {
+      path: '/_pagedock/unlock/:pathId',
+      name: 'unlock',
+      component: () => import('../views/UnlockView.vue'),
+    },
     { path: '/_pagedock/:pathMatch(.*)*', redirect: '/_pagedock' },
     {
       path: '/:pathMatch(.*)*',
