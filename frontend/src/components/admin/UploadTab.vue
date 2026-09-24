@@ -77,8 +77,12 @@ async function submit() {
     body.append('version', form.version);
     body.append('description', form.description);
     body.append('overwrite', form.overwrite);
-    body.append('passwordProtected', String(form.passwordProtected));
-    if (form.passwordProtected) body.append('password', form.password);
+    // Unchecked sends nothing, so replacing a protected page keeps its
+    // password; removing protection is done from the edit dialog.
+    if (form.passwordProtected) {
+      body.append('passwordProtected', 'true');
+      body.append('password', form.password);
+    }
     if (isLink) {
       body.append('type', 'link');
       body.append('linkUrl', form.linkUrl.trim());
@@ -194,6 +198,9 @@ async function submit() {
           <input v-model="form.overwrite" type="radio" value="true" />
           {{ locale.t('form.overwriteReplace') }}
         </label>
+        <span v-if="form.overwrite === 'true' && !form.passwordProtected" class="field-hint">
+          {{ locale.t('form.overwriteKeepsProtection') }}
+        </span>
       </fieldset>
       <button type="submit" class="btn-solid" :disabled="submitting">
         {{ locale.t('form.submitUpload') }}

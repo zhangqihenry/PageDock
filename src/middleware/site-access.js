@@ -51,7 +51,7 @@ export function createSiteAccess(config, siteService, dynamicTools = []) {
     legacyHeaders: false,
     skipSuccessfulRequests: true,
     handler(_req, res) {
-      res.status(429).json({ error: '尝试次数过多，请稍后重试。', code: 'RATE_LIMITED', params: {} });
+      res.status(429).json({ error: '密码尝试次数过多，请稍后重试。', code: 'UNLOCK_RATE_LIMITED', params: {} });
     },
   });
 

@@ -87,9 +87,23 @@ async function writeMetadata(siteRoot, metadata, stagingDir) {
   }
 }
 
+// Unreadable metadata may have held a password, so listings treat the site
+// as hidden and protected: it drops out of the catalog but stays visible to
+// the admin, who can replace or delete it. Access checks still fail closed.
+const UNREADABLE_METADATA = Object.freeze({ enabled: false, passwordHash: 'unreadable' });
+
+async function readListingMetadata(root) {
+  try {
+    return await readMetadata(root);
+  } catch (error) {
+    if (error instanceof SyntaxError) return UNREADABLE_METADATA;
+    throw error;
+  }
+}
+
 async function describeSite(pathId, root) {
   const [metadata, stats, sizeBytes] = await Promise.all([
-    readMetadata(root),
+    readListingMetadata(root),
     fs.stat(root),
     directorySize(root),
   ]);
