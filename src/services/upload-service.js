@@ -73,6 +73,7 @@ async function writeMetadata(
   sizeBytes,
   enabled,
   passwordHash,
+  categoryId,
 ) {
   const metadata = {
     schemaVersion: 7,
@@ -90,6 +91,7 @@ async function writeMetadata(
     sizeBytes,
     enabled,
     passwordHash,
+    categoryId,
   };
   await fs.writeFile(
     path.join(stagingRoot, '.pagedock.json'),
@@ -115,6 +117,7 @@ async function writeLinkFiles(
   sortOrder,
   enabled,
   passwordHash,
+  categoryId,
 ) {
   const html = renderLinkRedirectHtml(title, linkUrl);
   await fs.writeFile(path.join(stagingRoot, 'index.html'), html, {
@@ -135,6 +138,7 @@ async function writeLinkFiles(
     sizeBytes: Buffer.byteLength(html, 'utf8'),
     enabled,
     passwordHash,
+    categoryId,
   };
   await fs.writeFile(
     path.join(stagingRoot, '.pagedock.json'),
@@ -176,9 +180,19 @@ async function promoteStagingDirectory(stagingRoot, targetRoot, overwrite) {
   await fs.rm(backupRoot, { recursive: true, force: true });
 }
 
-export function createUploadService(config, siteService) {
+export function createUploadService(config, siteService, categoryService) {
   const reservedPaths = new Set();
   const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
+
+  // Like the password, a page keeps its category when its file is replaced
+  // unless the admin picks a different one; a brand new page goes into the
+  // first category.
+  async function resolveCategory(requested, existing) {
+    return (
+      (await categoryService.validate(requested)) ??
+      (existing?.categoryId || (await categoryService.list())[0].id)
+    );
+  }
 
   async function withPathId(options, publish) {
     if (String(options.pathId ?? '').trim()) return publish(options);
@@ -212,6 +226,7 @@ export function createUploadService(config, siteService) {
     overwrite = false,
     passwordProtected,
     password,
+    categoryId,
   }) {
     assertValidPathId(pathId);
     const normalizedTitle = normalizeTitle(title);
@@ -230,11 +245,13 @@ export function createUploadService(config, siteService) {
     let sortOrder = DEFAULT_SORT_ORDER;
     let promoted = false;
 
+    let existing = null;
     if (overwrite && (await siteService.exists(pathId))) {
-      const existing = await siteService.get(pathId);
+      existing = await siteService.get(pathId);
       enabled = existing.enabled;
       sortOrder = existing.sortOrder;
     }
+    const resolvedCategoryId = await resolveCategory(categoryId, existing);
 
     const existingAccess = overwrite ? await siteService.getAccess(pathId) : null;
     const passwordHash = await resolvePasswordHash(existingAccess?.passwordHash, { passwordProtected, password });
@@ -290,6 +307,7 @@ export function createUploadService(config, siteService) {
         sizeBytes,
         enabled,
         passwordHash,
+        resolvedCategoryId,
       );
       await promoteStagingDirectory(stagingRoot, targetRoot, overwrite);
       promoted = true;
@@ -313,6 +331,7 @@ export function createUploadService(config, siteService) {
     overwrite = false,
     passwordProtected,
     password,
+    categoryId,
   }) {
     assertValidPathId(pathId);
     const normalizedTitle = normalizeTitle(title);
@@ -328,11 +347,13 @@ export function createUploadService(config, siteService) {
     let sortOrder = DEFAULT_SORT_ORDER;
     let promoted = false;
 
+    let existing = null;
     if (overwrite && (await siteService.exists(pathId))) {
-      const existing = await siteService.get(pathId);
+      existing = await siteService.get(pathId);
       enabled = existing.enabled;
       sortOrder = existing.sortOrder;
     }
+    const resolvedCategoryId = await resolveCategory(categoryId, existing);
 
     const existingAccess = overwrite ? await siteService.getAccess(pathId) : null;
     const passwordHash = await resolvePasswordHash(existingAccess?.passwordHash, { passwordProtected, password });
@@ -350,6 +371,7 @@ export function createUploadService(config, siteService) {
         sortOrder,
         enabled,
         passwordHash,
+        resolvedCategoryId,
       );
       await promoteStagingDirectory(stagingRoot, targetRoot, overwrite);
       promoted = true;

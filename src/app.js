@@ -14,6 +14,7 @@ import { createCatalogRouter } from './routes/api/catalog.js';
 import { createAuthApiRouter } from './routes/api/auth.js';
 import { createAdminSitesRouter } from './routes/api/admin-sites.js';
 import { createAdminSettingsRouter } from './routes/api/admin-settings.js';
+import { createAdminCategoriesRouter } from './routes/api/admin-categories.js';
 import { createSiteDispatcher } from './routes/site-dispatcher.js';
 import {
   dynamicTools as defaultDynamicTools,
@@ -21,6 +22,7 @@ import {
 } from './routes/tools/index.js';
 import { createSiteService } from './services/site-service.js';
 import { createSettingsService } from './services/settings-service.js';
+import { createCategoryService } from './services/category-service.js';
 import { createStatsService } from './services/stats-service.js';
 import { createExportService } from './services/export-service.js';
 import { createUploadService } from './services/upload-service.js';
@@ -61,9 +63,14 @@ export async function createApp(options = {}) {
   const siteService = createSiteService(config);
   await siteService.initialize();
   const settingsService = createSettingsService(config);
+  const categoryService = createCategoryService(config);
   const statsService = createStatsService(config);
   await statsService.initialize();
-  const { uploadSite, createLinkSite } = createUploadService(config, siteService);
+  const { uploadSite, createLinkSite } = createUploadService(
+    config,
+    siteService,
+    categoryService,
+  );
   const { prepareExport } = createExportService(siteService);
   const dynamicTools = options.dynamicTools || defaultDynamicTools;
   const siteAccess = createSiteAccess(config, siteService, dynamicTools);
@@ -91,7 +98,7 @@ export async function createApp(options = {}) {
     '/_pagedock/api/catalog',
     helmet(managementSecurityOptions(config)),
     createCatalogRouter(
-      { siteService, settingsService, statsService },
+      { siteService, settingsService, statsService, categoryService },
       { version: packageVersion },
     ),
   );
@@ -129,6 +136,7 @@ export async function createApp(options = {}) {
     '/_pagedock/api/admin/sites',
     createAdminSitesRouter(config, {
       siteService,
+      categoryService,
       uploadSite,
       createLinkSite,
       prepareExport,
@@ -137,6 +145,10 @@ export async function createApp(options = {}) {
   app.use(
     '/_pagedock/api/admin/settings',
     createAdminSettingsRouter({ settingsService }),
+  );
+  app.use(
+    '/_pagedock/api/admin/categories',
+    createAdminCategoriesRouter({ categoryService, siteService }),
   );
   // Anything else under /_pagedock/api is an unknown JSON endpoint.
   app.use('/_pagedock/api', notFoundHandler);
@@ -183,6 +195,7 @@ export async function createApp(options = {}) {
   app.locals.services = {
     siteService,
     settingsService,
+    categoryService,
     statsService,
     uploadSite,
     createLinkSite,

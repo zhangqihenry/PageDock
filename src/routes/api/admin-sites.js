@@ -6,6 +6,7 @@ import multer from 'multer';
 import { AppError } from '../../errors.js';
 import { requireAuth } from '../../middleware/require-auth.js';
 import { verifyCsrfToken } from '../../middleware/csrf.js';
+import { resolveCategoryId } from '../../utils/category-fields.js';
 
 function createUploadMiddleware(config) {
   const storage = multer.diskStorage({
@@ -21,7 +22,7 @@ function createUploadMiddleware(config) {
     limits: {
       fileSize: config.maxUploadBytes,
       files: 1,
-      fields: 10,
+      fields: 12,
       fieldSize: 4096,
     },
     fileFilter(_req, file, callback) {
@@ -43,7 +44,7 @@ function createUploadMiddleware(config) {
 
 export function createAdminSitesRouter(
   config,
-  { siteService, uploadSite, createLinkSite, prepareExport },
+  { siteService, categoryService, uploadSite, createLinkSite, prepareExport },
 ) {
   const router = Router();
   const upload = createUploadMiddleware(config);
@@ -51,9 +52,16 @@ export function createAdminSitesRouter(
   router.use(requireAuth);
 
   router.get('/', async (_req, res) => {
-    const sites = await siteService.list({ includeDisabled: true });
+    const [sites, categories] = await Promise.all([
+      siteService.list({ includeDisabled: true }),
+      categoryService.list(),
+    ]);
     res.json({
-      sites,
+      sites: sites.map((site) => ({
+        ...site,
+        categoryId: resolveCategoryId(site.categoryId, categories),
+      })),
+      categories,
       limits: {
         maxUploadBytes: config.maxUploadBytes,
         maxExtractedBytes: config.maxExtractedBytes,
@@ -80,6 +88,7 @@ export function createAdminSitesRouter(
             overwrite,
             passwordProtected: req.body.passwordProtected,
             password: req.body.password,
+            categoryId: req.body.categoryId,
           })
         : await uploadSite({
             pathId,
@@ -90,6 +99,7 @@ export function createAdminSitesRouter(
             overwrite,
             passwordProtected: req.body.passwordProtected,
             password: req.body.password,
+            categoryId: req.body.categoryId,
           });
     res.status(201).json(metadata);
   });
@@ -130,6 +140,7 @@ export function createAdminSitesRouter(
         overwrite: true,
         passwordProtected: req.body.passwordProtected,
         password: req.body.password,
+        categoryId: req.body.categoryId,
       });
     } else {
       // linkUrl is only applied when the site already on disk is a "link"
@@ -141,6 +152,7 @@ export function createAdminSitesRouter(
         linkUrl: String(req.body.linkUrl || ''),
         passwordProtected: req.body.passwordProtected,
         password: req.body.password,
+        categoryId: await categoryService.validate(req.body.categoryId),
       });
     }
     res.json(metadata);

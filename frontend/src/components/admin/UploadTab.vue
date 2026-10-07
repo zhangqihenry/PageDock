@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { api } from '../../api/client.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCatalogStore } from '../../stores/catalog.js';
@@ -24,21 +24,39 @@ const form = reactive({
   overwrite: 'false',
   passwordProtected: false,
   password: '',
+  categoryId: '',
 });
 const fileInput = ref(null);
 const submitting = ref(false);
 const error = ref('');
 const limits = ref(null);
+const categories = ref([]);
 
 onMounted(async () => {
   try {
     const data = await api.get('/admin/sites');
     limits.value = data.limits;
+    categories.value = data.categories;
+    form.categoryId = defaultCategoryId();
   } catch {
-    // The limits hint is a nice-to-have — a failed fetch here shouldn't
-    // block the upload form itself from being usable.
+    // The limits hint and category picker are nice-to-haves — a failed
+    // fetch here shouldn't block the upload form itself from being usable;
+    // the server files the page under the first category.
   }
 });
+
+// Blank tells the server "keep the replaced page's category", so it's
+// only offered (and preselected) while overwriting is on.
+function defaultCategoryId() {
+  return form.overwrite === 'true' ? '' : categories.value[0]?.id ?? '';
+}
+
+watch(
+  () => form.overwrite,
+  () => {
+    form.categoryId = defaultCategoryId();
+  },
+);
 
 function resetForm() {
   Object.assign(form, {
@@ -51,6 +69,7 @@ function resetForm() {
     passwordProtected: false,
     password: '',
   });
+  form.categoryId = defaultCategoryId();
   if (fileInput.value) {
     fileInput.value.value = '';
   }
@@ -77,6 +96,7 @@ async function submit() {
     body.append('version', form.version);
     body.append('description', form.description);
     body.append('overwrite', form.overwrite);
+    body.append('categoryId', form.categoryId);
     // Unchecked sends nothing, so replacing a protected page keeps its
     // password; removing protection is done from the edit dialog.
     if (form.passwordProtected) {
@@ -177,6 +197,17 @@ async function submit() {
           :placeholder="locale.t('form.versionPlaceholder')"
           maxlength="40"
         />
+      </label>
+      <label v-if="categories.length >= 2">
+        {{ locale.t('form.categoryLabel') }}
+        <select v-model="form.categoryId">
+          <option v-if="form.overwrite === 'true'" value="">
+            {{ locale.t('form.categoryKeep') }}
+          </option>
+          <option v-for="category in categories" :key="category.id" :value="category.id">
+            {{ category.name }}
+          </option>
+        </select>
       </label>
       <label class="field-wide">
         {{ locale.t('common.description') }}

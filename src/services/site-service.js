@@ -141,6 +141,10 @@ async function describeSite(pathId, root) {
     enabled: metadata?.enabled !== false,
     passwordProtected: Boolean(metadata?.passwordHash),
     sortOrder: normalizeSortOrder(metadata?.sortOrder),
+    // Raw stored id; routes map it onto an existing category with
+    // resolveCategoryId() before it reaches the UI.
+    categoryId:
+      typeof metadata?.categoryId === 'string' ? metadata.categoryId : '',
   };
 }
 
@@ -232,7 +236,7 @@ export function createSiteService(config) {
     return describeSite(pathId, root);
   }
 
-  async function update(pathId, { title, description, version, linkUrl, ...protection }) {
+  async function update(pathId, { title, description, version, linkUrl, categoryId, ...protection }) {
     const root = siteRoot(pathId);
     if (!(await exists(pathId))) {
       throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
@@ -277,6 +281,7 @@ export function createSiteService(config) {
       uploadedAt: existingMetadata?.uploadedAt || stats.mtime.toISOString(),
       sizeBytes,
       passwordHash,
+      categoryId: categoryId ?? existingMetadata?.categoryId,
     };
     if (isLink) {
       metadata.linkUrl = normalizedLinkUrl;
@@ -352,6 +357,17 @@ export function createSiteService(config) {
     return siteResponse(metadata);
   }
 
+  // Moves every page filed under a deleted category to its successor.
+  async function reassignCategory(fromId, toId) {
+    const sites = await list({ includeDisabled: true });
+    for (const site of sites) {
+      if (site.categoryId !== fromId) continue;
+      const root = siteRoot(site.pathId);
+      const existingMetadata = await readMetadata(root);
+      await writeMetadata(root, { ...existingMetadata, categoryId: toId }, config.stagingDir);
+    }
+  }
+
   async function remove(pathId) {
     const root = siteRoot(pathId);
     if (!(await exists(pathId))) {
@@ -371,6 +387,7 @@ export function createSiteService(config) {
     setEnabled,
     setSortOrder,
     setSortOrders,
+    reassignCategory,
     remove,
     siteRoot,
     directorySize,

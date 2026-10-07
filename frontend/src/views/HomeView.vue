@@ -10,22 +10,34 @@ const catalog = useCatalogStore();
 const display = useDisplayStore();
 const typography = useTypographyStore();
 const locale = useLocaleStore();
-const activeTab = ref('regular');
-const visibleSites = computed(() => catalog.sites.filter(
-  (site) => Boolean(site.passwordProtected) === (activeTab.value === 'protected'),
-));
-const tabs = ['regular', 'protected'];
+// Category names only appear once there's more than one category to
+// choose between; with a single category every page is simply listed.
+const tabs = computed(() => (catalog.categories.length >= 2 ? catalog.categories : []));
+const selectedTab = ref('');
+// The first category is selected by default, and again if the selected
+// one is deleted while this page stays open.
+const activeTab = computed(() =>
+  tabs.value.some((tab) => tab.id === selectedTab.value)
+    ? selectedTab.value
+    : tabs.value[0]?.id,
+);
+const visibleSites = computed(() =>
+  tabs.value.length === 0
+    ? catalog.sites
+    : catalog.sites.filter((site) => site.categoryId === activeTab.value),
+);
 
 function moveTab(event, index) {
+  const count = tabs.value.length;
   let next = index;
-  if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
-  else if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
+  if (event.key === 'ArrowRight') next = (index + 1) % count;
+  else if (event.key === 'ArrowLeft') next = (index + count - 1) % count;
   else if (event.key === 'Home') next = 0;
-  else if (event.key === 'End') next = tabs.length - 1;
+  else if (event.key === 'End') next = count - 1;
   else return;
   event.preventDefault();
-  activeTab.value = tabs[next];
-  document.getElementById(`catalog-tab-${tabs[next]}`)?.focus();
+  selectedTab.value = tabs.value[next].id;
+  document.getElementById(`catalog-tab-${tabs.value[next].id}`)?.focus();
 }
 
 onMounted(() => {
@@ -95,26 +107,36 @@ const showIntroDivider = computed(
         <p class="lede" :style="subtitleStyle">{{ catalog.settings.subtitle }}</p>
       </section>
 
-      <div class="catalog-tabs segmented" role="tablist" :aria-label="locale.t('catalog.tabsLabel')">
+      <div
+        v-if="tabs.length > 0"
+        class="catalog-tabs segmented"
+        role="tablist"
+        :aria-label="locale.t('catalog.tabsLabel')"
+      >
         <button
           v-for="(tab, index) in tabs"
-          :id="`catalog-tab-${tab}`"
-          :key="tab"
+          :id="`catalog-tab-${tab.id}`"
+          :key="tab.id"
           type="button"
           role="tab"
           class="segmented-option"
-          :class="{ 'is-active': activeTab === tab }"
-          :aria-selected="activeTab === tab"
+          :class="{ 'is-active': activeTab === tab.id }"
+          :aria-selected="activeTab === tab.id"
           aria-controls="catalog-panel"
-          :tabindex="activeTab === tab ? 0 : -1"
-          @click="activeTab = tab"
+          :tabindex="activeTab === tab.id ? 0 : -1"
+          @click="selectedTab = tab.id"
           @keydown="moveTab($event, index)"
-        >{{ locale.t(`catalog.${tab}`) }}</button>
+        >{{ tab.name }}</button>
       </div>
 
-      <div id="catalog-panel" role="tabpanel" :aria-labelledby="`catalog-tab-${activeTab}`" tabindex="0">
+      <div
+        id="catalog-panel"
+        v-bind="tabs.length > 0
+          ? { role: 'tabpanel', 'aria-labelledby': `catalog-tab-${activeTab}`, tabindex: 0 }
+          : {}"
+      >
         <section v-if="visibleSites.length === 0" class="empty">
-          <p>{{ locale.t(catalog.sites.length === 0 ? 'catalog.empty' : `catalog.empty${activeTab === 'protected' ? 'Protected' : 'Regular'}`) }}</p>
+          <p>{{ locale.t(catalog.sites.length === 0 ? 'catalog.empty' : 'catalog.emptyCategory') }}</p>
         </section>
 
         <section

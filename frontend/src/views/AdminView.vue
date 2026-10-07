@@ -5,6 +5,7 @@ import { useAuthStore } from '../stores/auth.js';
 import { useLocaleStore } from '../stores/locale.js';
 import SitesTab from '../components/admin/SitesTab.vue';
 import UploadTab from '../components/admin/UploadTab.vue';
+import CategoriesTab from '../components/admin/CategoriesTab.vue';
 import SettingsTab from '../components/admin/SettingsTab.vue';
 
 // Login has no route of its own — it's a modal on the homepage. Landing
@@ -15,7 +16,7 @@ const locale = useLocaleStore();
 const route = useRoute();
 const router = useRouter();
 
-const TABS = ['sites', 'upload', 'settings'];
+const TABS = ['sites', 'upload', 'categories', 'settings'];
 
 const activeTab = computed(() => {
   const requested = route.query.tab;
@@ -27,6 +28,7 @@ const activeTab = computed(() => {
 const TAB_LABEL_KEYS = {
   sites: 'admin.tabSites',
   upload: 'admin.tabUpload',
+  categories: 'admin.tabCategories',
   settings: 'admin.tabSettings',
 };
 const activeTabLabel = computed(() =>
@@ -73,6 +75,14 @@ watch(() => auth.ready, guard);
         <button
           type="button"
           class="admin-tab"
+          :class="{ 'is-active': activeTab === 'categories' }"
+          @click="selectTab('categories')"
+        >
+          {{ locale.t('admin.tabCategories') }}
+        </button>
+        <button
+          type="button"
+          class="admin-tab"
           :class="{ 'is-active': activeTab === 'settings' }"
           @click="selectTab('settings')"
         >
@@ -83,6 +93,7 @@ watch(() => auth.ready, guard);
       <section class="admin-panel" :aria-label="activeTabLabel">
         <SitesTab v-if="activeTab === 'sites'" />
         <UploadTab v-else-if="activeTab === 'upload'" @uploaded="selectTab('sites')" />
+        <CategoriesTab v-else-if="activeTab === 'categories'" />
         <SettingsTab v-else-if="activeTab === 'settings'" />
       </section>
     </template>

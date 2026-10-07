@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { api } from '../../api/client.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCatalogStore } from '../../stores/catalog.js';
@@ -13,6 +13,13 @@ const catalog = useCatalogStore();
 const locale = useLocaleStore();
 
 const sites = ref([]);
+const categories = ref([]);
+// Mirrors the homepage: category names only matter once there are two.
+const categoryNames = computed(() =>
+  categories.value.length >= 2
+    ? new Map(categories.value.map((category) => [category.id, category.name]))
+    : new Map(),
+);
 const loaded = ref(false);
 const error = ref('');
 const message = ref('');
@@ -24,6 +31,7 @@ async function load() {
   error.value = '';
   const data = await api.get('/admin/sites');
   sites.value = data.sites;
+  categories.value = data.categories;
   loaded.value = true;
 }
 
@@ -136,6 +144,10 @@ async function handleSaved() {
           <div class="site-card-head">
             <span class="site-card-title">{{ site.title }}</span>
             <span class="site-card-path mono">/{{ site.pathId }}/</span>
+            <span
+              v-if="categoryNames.has(site.categoryId)"
+              class="site-status-badge"
+            >{{ categoryNames.get(site.categoryId) }}</span>
             <span v-if="site.passwordProtected" class="site-status-badge">{{ locale.t('catalog.protected') }}</span>
             <span
               v-if="site.type === 'link'"
@@ -214,7 +226,12 @@ async function handleSaved() {
       </div>
     </template>
 
-    <SiteEditModal :site="editingSite" @close="editingSite = null" @saved="handleSaved" />
+    <SiteEditModal
+      :site="editingSite"
+      :categories="categories"
+      @close="editingSite = null"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 

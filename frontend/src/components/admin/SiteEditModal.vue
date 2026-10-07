@@ -8,13 +8,14 @@ import PasswordFields from './PasswordFields.vue';
 
 const props = defineProps({
   site: { type: Object, default: null },
+  categories: { type: Array, default: () => [] },
 });
 const emit = defineEmits(['close', 'saved']);
 
 const auth = useAuthStore();
 const locale = useLocaleStore();
 
-const form = reactive({ title: '', version: '', description: '', linkUrl: '', passwordProtected: false, password: '' });
+const form = reactive({ title: '', version: '', description: '', linkUrl: '', passwordProtected: false, password: '', categoryId: '' });
 const fileInput = ref(null);
 const submitting = ref(false);
 const error = ref('');
@@ -32,6 +33,7 @@ watch(
     form.linkUrl = site.linkUrl || '';
     form.passwordProtected = Boolean(site.passwordProtected);
     form.password = '';
+    form.categoryId = site.categoryId;
     error.value = '';
     submitting.value = false;
     if (fileInput.value) {
@@ -56,6 +58,7 @@ async function submit() {
     body.append('description', form.description);
     body.append('passwordProtected', String(form.passwordProtected));
     if (form.passwordProtected) body.append('password', form.password);
+    body.append('categoryId', form.categoryId);
     if (props.site.type === 'link') {
       body.append('linkUrl', form.linkUrl);
     } else {
@@ -148,6 +151,14 @@ function onKeydown(event) {
               maxlength="300"
               rows="3"
             ></textarea>
+          </label>
+          <label v-if="categories.length >= 2">
+            {{ locale.t('form.categoryLabel') }}
+            <select v-model="form.categoryId">
+              <option v-for="category in categories" :key="category.id" :value="category.id">
+                {{ category.name }}
+              </option>
+            </select>
           </label>
           <template v-if="site.type === 'link'">
             <label>

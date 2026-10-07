@@ -72,7 +72,7 @@ logic can be added through trusted Express routes built into the image.
 - 每个网页拥有独立的访问路径，可直接分享，如 `/sample/` · Each site gets its own shareable path, e.g. `/sample/`
 - 路径留空时自动生成 6 位随机路径，仅含数字和小写字母，并自动避开已占用路径 · Blank paths generate six random lowercase letters/digits, avoiding occupied paths
 - 上传时可设置访问密码，至少 6 个字符；访问网页及其资源前需要验证密码，编辑时可修改或关闭保护 · Optional passwords of at least six characters protect pages and their assets; edit a page to change or remove its password
-- 首页分为「常规」和「加密」两个选项卡，默认显示常规网页 · The homepage separates regular and protected pages into tabs, with regular pages shown by default
+- 后台可自定义网页分类，任意网页（包括加密网页）都可放入任一分类；分类达到 2 个时首页按分类显示选项卡 · Admins can define their own categories and file any page, protected or not, under any of them; once there are two or more, the homepage shows a tab per category
 - 首页目录是 Blog 风格，大小标题可在后台自定义 · The homepage catalog has a blog-style layout, with an admin-editable title and subtitle
 - 未登录也可浏览已发布的网页目录 · The published catalog is browsable without logging in
 - 页脚展示访问量：今日、近 7 日和总计 · The footer shows page-view counts for today, the last 7 days, and all time
