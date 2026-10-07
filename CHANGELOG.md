@@ -1,5 +1,13 @@
 # Changelog / 更新日志
 
+## v1.6.0 — 2026-10-07
+
+**EN:**
+- Pages can be organized into custom categories managed from the admin panel; with two or more categories, the homepage shows a tab for each.
+
+**中文：**
+- 后台可自定义网页分类，任意网页都可放入任一分类；分类达到 2 个时，首页按分类显示选项卡。
+
 ## v1.5.0 — 2026-09-24
 
 **EN:**
