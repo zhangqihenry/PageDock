@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useLocaleStore } from '../stores/locale.js';
 import { describeError } from '../utils/errors.js';
+import BaseModal from './ui/BaseModal.vue';
 
 const auth = useAuthStore();
 const locale = useLocaleStore();
@@ -54,75 +55,52 @@ function close() {
   }
   auth.closeLoginModal();
 }
-
-function onKeydown(event) {
-  if (event.key === 'Escape') {
-    close();
-  }
-}
 </script>
 
 <template>
-  <Teleport to="body">
-    <div
-      v-if="auth.loginModalOpen"
-      class="modal-backdrop"
-      @click.self="close"
-      @keydown="onKeydown"
-    >
-      <div
-        class="modal-card card"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="login-modal-title"
+  <BaseModal
+    :open="auth.loginModalOpen"
+    :title="locale.t('login.title')"
+    :description="locale.t('login.subtitle')"
+    :busy="submitting"
+    @close="close"
+  >
+    <p v-if="error" class="alert alert-error" role="alert">{{ error }}</p>
+
+    <form class="stack" @submit.prevent="submit">
+      <label class="field">
+        {{ locale.t('login.usernameLabel') }}
+        <input
+          ref="usernameInput"
+          v-model="username"
+          autocomplete="username"
+          required
+        />
+      </label>
+      <label class="field">
+        {{ locale.t('login.passwordLabel') }}
+        <input
+          v-model="password"
+          type="password"
+          autocomplete="current-password"
+          required
+        />
+      </label>
+      <button
+        type="submit"
+        class="btn btn-primary btn-lg btn-block login-submit"
+        :disabled="submitting"
+        :aria-busy="submitting"
       >
-        <button
-          type="button"
-          class="icon-button modal-close"
-          :aria-label="locale.t('common.cancel')"
-          @click="close"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <path d="M6 6l12 12M18 6L6 18" />
-          </svg>
-        </button>
-
-        <h2 id="login-modal-title">{{ locale.t('login.title') }}</h2>
-        <p class="muted">{{ locale.t('login.subtitle') }}</p>
-
-        <p v-if="error" class="alert alert-error" role="alert">{{ error }}</p>
-
-        <form class="stack" @submit.prevent="submit">
-          <label>
-            {{ locale.t('login.usernameLabel') }}
-            <input
-              ref="usernameInput"
-              v-model="username"
-              autocomplete="username"
-              required
-            />
-          </label>
-          <label>
-            {{ locale.t('login.passwordLabel') }}
-            <input
-              v-model="password"
-              type="password"
-              autocomplete="current-password"
-              required
-            />
-          </label>
-          <button type="submit" class="btn-solid btn-block" :disabled="submitting">
-            {{ locale.t('login.submit') }}
-          </button>
-        </form>
-      </div>
-    </div>
-  </Teleport>
+        <span v-if="submitting" class="spinner" aria-hidden="true"></span>
+        {{ locale.t('login.submit') }}
+      </button>
+    </form>
+  </BaseModal>
 </template>
+
+<style scoped>
+.login-submit {
+  margin-top: var(--space-2);
+}
+</style>

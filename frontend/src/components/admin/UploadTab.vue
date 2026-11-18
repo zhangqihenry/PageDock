@@ -1,11 +1,14 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { api } from '../../api/client.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCatalogStore } from '../../stores/catalog.js';
 import { useLocaleStore } from '../../stores/locale.js';
+import { useToastStore } from '../../stores/toast.js';
 import { describeError } from '../../utils/errors.js';
 import { formatBytes } from '../../utils/format.js';
+import FileDrop from '../ui/FileDrop.vue';
+import Segmented from '../ui/Segmented.vue';
 import PasswordFields from './PasswordFields.vue';
 
 const emit = defineEmits(['uploaded']);
@@ -13,6 +16,7 @@ const emit = defineEmits(['uploaded']);
 const auth = useAuthStore();
 const catalog = useCatalogStore();
 const locale = useLocaleStore();
+const toast = useToastStore();
 
 const form = reactive({
   mode: 'file',
@@ -26,11 +30,16 @@ const form = reactive({
   password: '',
   categoryId: '',
 });
-const fileInput = ref(null);
+const file = ref(null);
 const submitting = ref(false);
 const error = ref('');
 const limits = ref(null);
 const categories = ref([]);
+
+const modeOptions = computed(() => [
+  { value: 'file', label: locale.t('form.modeFile') },
+  { value: 'link', label: locale.t('form.modeLink') },
+]);
 
 onMounted(async () => {
   try {
@@ -70,15 +79,12 @@ function resetForm() {
     password: '',
   });
   form.categoryId = defaultCategoryId();
-  if (fileInput.value) {
-    fileInput.value.value = '';
-  }
+  file.value = null;
 }
 
 async function submit() {
   const isLink = form.mode === 'link';
-  const file = fileInput.value?.files?.[0];
-  if (!isLink && !file) {
+  if (!isLink && !file.value) {
     error.value = locale.t('errorCode.NO_FILE');
     return;
   }
@@ -107,12 +113,13 @@ async function submit() {
       body.append('type', 'link');
       body.append('linkUrl', form.linkUrl.trim());
     } else {
-      body.append('siteFile', file);
+      body.append('siteFile', file.value);
     }
 
     await api.post('/admin/sites', body, { csrfToken: auth.csrfToken });
     await catalog.fetch();
     resetForm();
+    toast.push(locale.t('admin.uploaded'));
     emit('uploaded');
   } catch (err) {
     error.value = describeError(err, locale);
@@ -123,40 +130,50 @@ async function submit() {
 </script>
 
 <template>
-  <div>
-    <p v-if="limits" class="panel-meta muted">
-      {{
-        locale.t('admin.limits', {
-          upload: formatBytes(limits.maxUploadBytes),
-          extracted: formatBytes(limits.maxExtractedBytes),
-          files: limits.maxZipFiles,
-        })
-      }}
-    </p>
-
-    <div class="segmented" role="group">
-      <button
-        type="button"
-        class="segmented-option"
-        :class="{ 'is-active': form.mode === 'file' }"
-        @click="form.mode = 'file'"
-      >
-        {{ locale.t('form.modeFile') }}
-      </button>
-      <button
-        type="button"
-        class="segmented-option"
-        :class="{ 'is-active': form.mode === 'link' }"
-        @click="form.mode = 'link'"
-      >
-        {{ locale.t('form.modeLink') }}
-      </button>
+  <div class="upload-tab">
+    <div class="upload-top">
+      <Segmented
+        v-model="form.mode"
+        :options="modeOptions"
+        :aria-label="locale.t('admin.tabUpload')"
+      />
+      <p v-if="limits" class="upload-limits">
+        {{
+          locale.t('admin.limits', {
+            upload: formatBytes(limits.maxUploadBytes),
+            extracted: formatBytes(limits.maxExtractedBytes),
+            files: limits.maxZipFiles,
+          })
+        }}
+      </p>
     </div>
 
     <p v-if="error" class="alert alert-error" role="alert">{{ error }}</p>
 
-    <form class="upload-grid" @submit.prevent="submit">
-      <label>
+    <form class="card card-pad upload-form" @submit.prevent="submit">
+      <Transition name="swap" mode="out-in">
+        <FileDrop
+          v-if="form.mode === 'file'"
+          key="file"
+          v-model="file"
+          class="field-wide"
+          :label="locale.t('form.fileLabel')"
+          :hint="locale.t('form.dropHint')"
+          accept=".html,.zip"
+          required
+        />
+        <label v-else key="link" class="field field-wide">
+          {{ locale.t('form.linkUrlLabel') }}
+          <input
+            v-model="form.linkUrl"
+            type="url"
+            :placeholder="locale.t('form.linkUrlPlaceholder')"
+            maxlength="2000"
+            required
+          />
+        </label>
+      </Transition>
+      <label class="field">
         {{ locale.t('form.titleLabel') }}
         <input
           v-model="form.title"
@@ -165,7 +182,7 @@ async function submit() {
           required
         />
       </label>
-      <label>
+      <label class="field">
         {{ locale.t('form.pathLabel') }}
         <input
           v-model="form.pathId"
@@ -176,21 +193,7 @@ async function submit() {
         />
         <span id="path-hint" class="field-hint">{{ locale.t('form.pathHint') }}</span>
       </label>
-      <label v-if="form.mode === 'file'">
-        {{ locale.t('form.fileLabel') }}
-        <input ref="fileInput" type="file" accept=".html,.zip" required />
-      </label>
-      <label v-else>
-        {{ locale.t('form.linkUrlLabel') }}
-        <input
-          v-model="form.linkUrl"
-          type="url"
-          :placeholder="locale.t('form.linkUrlPlaceholder')"
-          maxlength="2000"
-          required
-        />
-      </label>
-      <label>
+      <label class="field">
         {{ locale.t('form.versionLabel') }}
         <input
           v-model="form.version"
@@ -198,7 +201,7 @@ async function submit() {
           maxlength="40"
         />
       </label>
-      <label v-if="categories.length >= 2">
+      <label v-if="categories.length >= 2" class="field">
         {{ locale.t('form.categoryLabel') }}
         <select v-model="form.categoryId">
           <option v-if="form.overwrite === 'true'" value="">
@@ -209,7 +212,7 @@ async function submit() {
           </option>
         </select>
       </label>
-      <label class="field-wide">
+      <label class="field field-wide">
         {{ locale.t('common.description') }}
         <textarea
           v-model="form.description"
@@ -219,29 +222,86 @@ async function submit() {
         ></textarea>
       </label>
       <PasswordFields v-model:enabled="form.passwordProtected" v-model:password="form.password" />
-      <fieldset class="fieldset-plain field-wide">
+      <fieldset class="fieldset field-wide">
         <legend>{{ locale.t('form.overwriteLegend') }}</legend>
-        <label class="radio-option">
-          <input v-model="form.overwrite" type="radio" value="false" />
-          {{ locale.t('form.overwriteCancel') }}
-        </label>
-        <label class="radio-option">
-          <input v-model="form.overwrite" type="radio" value="true" />
-          {{ locale.t('form.overwriteReplace') }}
-        </label>
-        <span v-if="form.overwrite === 'true' && !form.passwordProtected" class="field-hint">
-          {{ locale.t('form.overwriteKeepsProtection') }}
-        </span>
+        <div class="choice-row">
+          <label class="check">
+            <input v-model="form.overwrite" type="radio" value="false" />
+            {{ locale.t('form.overwriteCancel') }}
+          </label>
+          <label class="check">
+            <input v-model="form.overwrite" type="radio" value="true" />
+            {{ locale.t('form.overwriteReplace') }}
+          </label>
+        </div>
+        <Transition name="fade">
+          <span v-if="form.overwrite === 'true' && !form.passwordProtected" class="field-hint">
+            {{ locale.t('form.overwriteKeepsProtection') }}
+          </span>
+        </Transition>
       </fieldset>
-      <button type="submit" class="btn-solid" :disabled="submitting">
-        {{ locale.t('form.submitUpload') }}
-      </button>
+      <div class="form-actions field-wide">
+        <button
+          type="submit"
+          class="btn btn-primary btn-lg"
+          :disabled="submitting"
+          :aria-busy="submitting"
+        >
+          <span v-if="submitting" class="spinner" aria-hidden="true"></span>
+          {{ locale.t('form.submitUpload') }}
+        </button>
+      </div>
     </form>
   </div>
 </template>
 
 <style scoped>
-.segmented {
-  margin-bottom: 1.25rem;
+.upload-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.upload-limits {
+  margin: 0;
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+}
+
+.upload-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--space-5) var(--space-4);
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: var(--border-width) solid var(--border);
+  padding-top: var(--space-5);
+}
+
+@media (max-width: 640px) {
+  .upload-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
 }
 </style>

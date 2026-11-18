@@ -307,6 +307,7 @@ replacing the existing site.
 
 - [群晖 NAS 部署指南 · Synology Deployment Guide](docs/synology-deployment.md)
 - [本地开发与动态工具扩展 · Local Development & Dynamic Tool Extensions](docs/development.md)
+- [设计规范 · Design System](docs/design-system.md)
 
 ## 许可证 / License
 

@@ -16,13 +16,15 @@ export function resolveFontStack(choice) {
 }
 
 // [key, min, max, default] — every size/spacing knob in the settings
-// modal, all in px. Grouped by the element they belong to; see
+// modal, all in px. Each default sits on the type scale in
+// assets/tokens.css (docs/design-system.md, "Visitor typography"); the
+// ranges are the hard limits the layout is designed to survive. Grouped by the element they belong to; see
 // SettingsModal.vue's TYPOGRAPHY_GROUPS for how these render.
 const NUMERIC_FIELDS = [
   ['h1Size', 20, 64, 36],
   ['h1SpaceBefore', 0, 80, 32],
   ['h1SpaceAfter', 0, 48, 8],
-  ['subtitleSize', 10, 24, 14],
+  ['subtitleSize', 10, 24, 16],
   ['subtitleSpaceBefore', 0, 48, 8],
   ['subtitleSpaceAfter', 0, 48, 16],
   ['rowIndexSize', 10, 20, 13],
@@ -30,7 +32,7 @@ const NUMERIC_FIELDS = [
   ['listDescSize', 10, 20, 13],
   ['tileTitleSize', 12, 28, 16],
   ['tileDescSize', 10, 20, 13],
-  ['footerSize', 8, 16, 10],
+  ['footerSize', 8, 16, 12],
 ];
 
 // Every font-family choice in the settings modal — all default to the

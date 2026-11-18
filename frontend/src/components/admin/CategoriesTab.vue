@@ -4,22 +4,23 @@ import { api } from '../../api/client.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useCatalogStore } from '../../stores/catalog.js';
 import { useLocaleStore } from '../../stores/locale.js';
+import { useToastStore } from '../../stores/toast.js';
 import { describeError } from '../../utils/errors.js';
+import Icon from '../ui/Icon.vue';
 
 const auth = useAuthStore();
 const catalog = useCatalogStore();
 const locale = useLocaleStore();
+const toast = useToastStore();
 
 // Each row keeps the saved name next to the one being typed, so a row's
-// save button only lights up once its name actually changed.
+// save button only appears once its name actually changed.
 const categories = ref([]);
 const pageCounts = ref(new Map());
 const loaded = ref(false);
 const busy = ref(false);
 const error = ref('');
-const message = ref('');
 const newName = ref('');
-let messageTimer = null;
 
 async function load() {
   error.value = '';
@@ -45,11 +46,7 @@ onMounted(() => {
 });
 
 function flash(key) {
-  message.value = locale.t(key);
-  window.clearTimeout(messageTimer);
-  messageTimer = window.setTimeout(() => {
-    message.value = '';
-  }, 4000);
+  toast.push(locale.t(key));
 }
 
 // Every change refreshes this list and the homepage's copy, whose tabs
@@ -108,62 +105,77 @@ function remove(category) {
 </script>
 
 <template>
-  <div>
-    <p class="panel-meta muted">{{ locale.t('categories.hint') }}</p>
+  <div class="categories-tab">
+    <p class="panel-meta">{{ locale.t('categories.hint') }}</p>
 
     <p v-if="error" class="alert alert-error" role="alert">{{ error }}</p>
-    <p v-else-if="message" class="alert alert-success" role="status">{{ message }}</p>
 
-    <p v-if="!loaded" class="muted">{{ locale.t('common.loading') }}</p>
+    <div v-if="!loaded" class="card cat-list" aria-busy="true">
+      <span class="sr-only" role="status">{{ locale.t('common.loading') }}</span>
+      <div v-for="n in 3" :key="n" class="cat-row" aria-hidden="true">
+        <span class="skeleton skeleton-title"></span>
+      </div>
+    </div>
 
     <template v-else>
-      <ol class="category-list">
-        <li v-for="(category, index) in categories" :key="category.id" class="category-row">
-          <form class="category-rename" @submit.prevent="rename(category)">
+      <TransitionGroup tag="ol" name="list" class="card cat-list">
+        <li
+          v-for="(category, index) in categories"
+          :key="category.id"
+          class="cat-row"
+        >
+          <span class="cat-index tabular" aria-hidden="true">{{ index + 1 }}</span>
+          <form class="cat-rename" @submit.prevent="rename(category)">
             <input
               v-model="category.draft"
+              class="input"
               :aria-label="locale.t('categories.nameLabel')"
               maxlength="30"
               required
             />
-            <button
-              type="submit"
-              class="btn"
-              :disabled="busy || category.draft.trim() === category.name"
-            >{{ locale.t('common.save') }}</button>
+            <Transition name="fade">
+              <button
+                v-if="category.draft.trim() !== category.name"
+                type="submit"
+                class="btn btn-sm btn-primary"
+                :disabled="busy"
+              >{{ locale.t('common.save') }}</button>
+            </Transition>
           </form>
-          <span class="category-count muted">{{
+          <span class="badge tabular">{{
             locale.t('categories.pageCount', { count: pageCounts.get(category.id) || 0 })
           }}</span>
-          <div class="category-actions">
+          <div class="cat-actions">
             <button
               type="button"
-              class="btn"
+              class="icon-btn icon-btn-sm"
               :disabled="busy || index === 0"
               :aria-label="locale.t('categories.moveUp')"
               :title="locale.t('categories.moveUp')"
               @click="move(index, -1)"
-            >↑</button>
+            ><Icon name="chevron-up" /></button>
             <button
               type="button"
-              class="btn"
+              class="icon-btn icon-btn-sm"
               :disabled="busy || index === categories.length - 1"
               :aria-label="locale.t('categories.moveDown')"
               :title="locale.t('categories.moveDown')"
               @click="move(index, 1)"
-            >↓</button>
+            ><Icon name="chevron-down" /></button>
             <button
               type="button"
-              class="btn btn-danger"
+              class="icon-btn icon-btn-sm icon-btn-danger"
               :disabled="busy || categories.length === 1"
+              :aria-label="`${locale.t('table.delete')} · ${category.name}`"
+              :title="locale.t('table.delete')"
               @click="remove(category)"
-            >{{ locale.t('table.delete') }}</button>
+            ><Icon name="trash" /></button>
           </div>
         </li>
-      </ol>
+      </TransitionGroup>
 
-      <form class="category-add" @submit.prevent="add">
-        <label>
+      <form class="card cat-add" @submit.prevent="add">
+        <label class="field">
           {{ locale.t('categories.newLabel') }}
           <input
             v-model="newName"
@@ -172,8 +184,8 @@ function remove(category) {
             required
           />
         </label>
-        <button type="submit" class="btn-solid" :disabled="busy">
-          {{ locale.t('categories.add') }}
+        <button type="submit" class="btn btn-primary" :disabled="busy">
+          <Icon name="plus" />{{ locale.t('categories.add') }}
         </button>
       </form>
     </template>
@@ -181,76 +193,100 @@ function remove(category) {
 </template>
 
 <style scoped>
-.category-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+.panel-meta {
+  margin: 0 0 var(--space-4);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.cat-list {
   margin: 0;
-  padding: 0;
+  padding: var(--space-1-5);
   list-style: none;
 }
 
-.category-row {
+.cat-row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem 1rem;
-  border: 1px solid var(--border);
+  gap: var(--space-3);
   border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
   background: var(--surface);
-  padding: 0.75rem 1rem;
 }
 
-.category-rename {
+.cat-row + .cat-row {
+  box-shadow: 0 calc(var(--border-width) * -1) 0 var(--border);
+}
+
+.cat-index {
+  flex: none;
+  width: var(--space-5);
+  color: var(--ink-faint);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.cat-rename {
   display: flex;
-  flex: 1 1 16rem;
+  flex: 1 1 auto;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
-.category-rename input {
-  margin-top: 0;
+.cat-rename .input {
+  min-height: var(--control-sm);
+  border-color: transparent;
+  background: transparent;
+  font-weight: var(--weight-medium);
 }
 
-.category-row button {
-  flex-shrink: 0;
-  white-space: nowrap;
+.cat-rename .input:hover {
+  border-color: var(--border);
 }
 
-.category-count {
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
-  font-variant-numeric: tabular-nums;
+.cat-rename .input:focus {
+  background: var(--surface-sunken);
 }
 
-.category-actions {
+.cat-actions {
   display: flex;
-  gap: 0.4rem;
-  margin-left: auto;
+  flex: none;
+  gap: var(--space-0-5);
 }
 
-.category-add {
+.cat-add {
   display: flex;
   align-items: flex-end;
-  gap: 0.6rem;
-  margin-top: 1.4rem;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-5);
 }
 
-.category-add label {
+.cat-add .field {
   flex: 1;
 }
 
-.category-add input {
-  margin-top: 0.4rem;
-}
+@media (max-width: 560px) {
+  .cat-row {
+    flex-wrap: wrap;
+  }
 
-.category-add .btn-solid {
-  font-size: var(--type-control);
-  line-height: 1.5;
-}
+  .cat-rename {
+    flex-basis: calc(100% - var(--space-8));
+  }
 
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
+  .cat-row .badge {
+    margin-left: var(--space-8);
+  }
+
+  .cat-actions {
+    margin-left: auto;
+  }
+
+  .cat-add {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 </style>

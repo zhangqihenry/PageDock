@@ -1,0 +1,803 @@
+/*
+  Shared component layer — the patterns described in
+  docs/design-system.md, "Components". A view's own <style scoped> only
+  arranges these; it never re-invents a button, field, card or badge.
+*/
+
+/* ================= Layout ================= */
+
+.container {
+  width: min(100% - 2 * var(--gutter), var(--content-max));
+  margin-inline: auto;
+}
+
+.page {
+  padding-block: clamp(var(--space-8), 6vw, var(--space-12)) var(--space-16);
+}
+
+.page-narrow {
+  width: min(100% - 2 * var(--gutter), var(--content-narrow));
+}
+
+.page-head {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.page-title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+}
+
+.page-lede {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--text-base);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* ================= Buttons ================= */
+
+.btn {
+  --btn-bg: var(--surface);
+  --btn-ink: var(--ink);
+  --btn-border: var(--border);
+  --btn-bg-hover: var(--surface-muted);
+  --btn-border-hover: var(--border-strong);
+  --btn-ink-hover: var(--btn-ink);
+
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-md);
+  border: var(--border-width) solid var(--btn-border);
+  border-radius: var(--radius-md);
+  background: var(--btn-bg);
+  padding: 0 var(--space-4);
+  color: var(--btn-ink);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  user-select: none;
+  transition: background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast) var(--ease-standard),
+    transform var(--dur-instant) var(--ease-standard);
+}
+
+.btn:hover {
+  border-color: var(--btn-border-hover);
+  background: var(--btn-bg-hover);
+  color: var(--btn-ink-hover);
+}
+
+.btn:active:not(:disabled, [aria-disabled="true"]) {
+  transform: scale(0.97);
+}
+
+.btn svg {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+}
+
+.btn-primary {
+  --btn-bg: var(--accent);
+  --btn-ink: var(--accent-ink);
+  --btn-border: var(--accent);
+  --btn-bg-hover: var(--accent-hover);
+  --btn-border-hover: var(--accent-hover);
+  box-shadow: var(--shadow-sm), inset 0 var(--border-width) 0 color-mix(in srgb, var(--accent-ink) 14%, transparent);
+}
+
+.btn-ghost {
+  --btn-bg: transparent;
+  --btn-border: transparent;
+  --btn-bg-hover: var(--surface-muted);
+  --btn-border-hover: transparent;
+  box-shadow: none;
+}
+
+.btn-danger {
+  --btn-ink: var(--danger);
+  --btn-bg-hover: var(--danger-soft);
+  --btn-border-hover: color-mix(in srgb, var(--danger) 45%, transparent);
+}
+
+.btn-sm {
+  min-height: var(--control-sm);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.btn-lg {
+  min-height: var(--control-lg);
+  padding: 0 var(--space-6);
+  font-size: var(--text-md);
+}
+
+.btn-block {
+  display: flex;
+  width: 100%;
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--ink-faint);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.btn-primary:disabled {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--accent) 45%, var(--surface));
+  color: var(--accent-ink);
+}
+
+.btn[aria-busy="true"] {
+  cursor: progress;
+}
+
+/* Square icon-only button (header actions, modal close, row tools). */
+.icon-btn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--control-md);
+  height: var(--control-md);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--ink-muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    transform var(--dur-instant) var(--ease-standard);
+}
+
+.icon-btn:hover {
+  background: var(--surface-muted);
+  color: var(--ink);
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.icon-btn:disabled {
+  color: var(--ink-faint);
+  opacity: 0.5;
+}
+
+.icon-btn:disabled:hover {
+  background: none;
+}
+
+.icon-btn svg {
+  width: var(--icon-md);
+  height: var(--icon-md);
+}
+
+.icon-btn-sm {
+  width: var(--control-sm);
+  height: var(--control-sm);
+  border-radius: var(--radius-sm);
+}
+
+.icon-btn-sm svg {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+}
+
+.icon-btn-outline {
+  border-color: var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.icon-btn-outline:hover {
+  border-color: var(--border-strong);
+}
+
+.icon-btn-danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* Inline progress indicator for buttons and small regions. It keeps
+   turning under reduced motion (it is the feedback itself), just slower. */
+.spinner {
+  display: inline-block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  border: var(--stroke) solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: spin 700ms linear infinite;
+}
+
+/* ================= Fields ================= */
+
+.field {
+  display: grid;
+  gap: var(--space-1-5);
+  min-width: 0;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.field-hint {
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-snug);
+}
+
+.input,
+.field input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]),
+.field textarea,
+.field select {
+  width: 100%;
+  min-height: var(--control-md);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  padding: var(--space-2) var(--space-3);
+  color: var(--ink);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-snug);
+  transition: border-color var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
+}
+
+.field textarea {
+  min-height: 6rem;
+  resize: vertical;
+  line-height: var(--leading-normal);
+}
+
+.field select,
+select.input {
+  appearance: none;
+  padding-right: var(--space-8);
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-faint) 50%),
+    linear-gradient(135deg, var(--ink-faint) 50%, transparent 50%);
+  background-position: calc(100% - 1.05rem) 50%, calc(100% - 0.75rem) 50%;
+  background-size: 0.3rem 0.3rem;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.input::placeholder,
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+
+.input:hover,
+.field input:hover:not(:focus),
+.field textarea:hover:not(:focus),
+.field select:hover:not(:focus) {
+  border-color: var(--border-strong);
+}
+
+.input:focus,
+.field input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]):focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+  outline: none;
+  box-shadow: 0 0 0 var(--ring-width) var(--focus-ring);
+}
+
+/* Native checkboxes/radios, tinted — consistent, accessible, no fake DOM. */
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.check input {
+  width: var(--space-4);
+  height: var(--space-4);
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.fieldset {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--surface-sunken) 60%, transparent);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.fieldset legend {
+  padding: 0 var(--space-1-5);
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+/* iOS zooms into any focused field under 16px — keep inputs at 16 on
+   touch-sized screens. */
+@media (max-width: 640px) {
+  .input,
+  .field input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]),
+  .field textarea,
+  .field select {
+    font-size: var(--text-md);
+  }
+}
+
+/* Range slider */
+
+input[type="range"] {
+  --range-fill: 50%;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: var(--control-sm);
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: var(--range-track);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(to right, var(--accent) var(--range-fill), var(--border) var(--range-fill));
+}
+
+input[type="range"]::-moz-range-track {
+  height: var(--range-track);
+  border-radius: var(--radius-pill);
+  background: var(--border);
+}
+
+input[type="range"]::-moz-range-progress {
+  height: var(--range-track);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--range-thumb);
+  height: var(--range-thumb);
+  margin-top: calc((var(--range-track) - var(--range-thumb)) / 2);
+  border: var(--stroke) solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-fast) var(--ease-standard);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: calc(var(--range-thumb) - 2 * var(--stroke));
+  height: calc(var(--range-thumb) - 2 * var(--stroke));
+  border: var(--stroke) solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+
+input[type="range"]:hover::-webkit-slider-thumb,
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+  transform: scale(1.12);
+}
+
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 var(--ring-width) var(--focus-ring);
+}
+
+input[type="range"]:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 var(--ring-width) var(--focus-ring);
+}
+
+/* ================= Cards ================= */
+
+.card {
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-pad {
+  padding: clamp(var(--space-5), 4vw, var(--space-8));
+}
+
+.card-interactive {
+  transition: transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-standard);
+}
+
+.card-interactive:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(var(--lift));
+}
+
+/* Inset panel: a quiet grouped region inside a card or modal (setting
+   groups, fieldsets). */
+.panel-inset {
+  display: grid;
+  gap: var(--space-1);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--surface-sunken) 55%, transparent);
+  padding: var(--space-3) var(--space-4);
+}
+
+/* ================= Badges ================= */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--size-badge);
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  padding: 0 var(--space-2);
+  color: var(--ink-muted);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badge svg {
+  width: var(--space-3);
+  height: var(--space-3);
+}
+
+.badge-accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.badge-info {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.badge-positive {
+  background: var(--positive-soft);
+  color: var(--positive);
+}
+
+.badge-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.badge-dot::before {
+  content: "";
+  width: var(--size-bullet);
+  height: var(--size-bullet);
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ================= Alerts ================= */
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  padding: var(--space-3) var(--space-4);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  animation: rise var(--dur-base) var(--ease-out) backwards;
+}
+
+.alert-error {
+  border-color: color-mix(in srgb, var(--danger) 28%, transparent);
+  background: var(--danger-soft);
+}
+
+.alert-error::before,
+.alert-success::before {
+  content: "";
+  flex: none;
+  width: var(--size-bullet);
+  height: var(--size-bullet);
+  margin-top: 0.36em;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+.alert-success {
+  border-color: color-mix(in srgb, var(--positive) 28%, transparent);
+  background: var(--positive-soft);
+}
+
+.alert-success::before {
+  background: var(--positive);
+}
+
+/* ================= Empty & loading ================= */
+
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  border: var(--border-width) dashed var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: var(--space-12) var(--space-6);
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+.empty-state-icon {
+  display: grid;
+  place-items: center;
+  width: var(--space-12);
+  height: var(--space-12);
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.empty-state-icon svg {
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+}
+
+.empty-state p {
+  max-width: var(--measure);
+  margin: 0;
+}
+
+.skeleton {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--skeleton);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--skeleton-shine), transparent);
+  transform: translateX(-100%);
+  animation: shimmer 1.4s var(--ease-standard) infinite;
+}
+
+.skeleton-line {
+  height: var(--space-3);
+}
+
+.skeleton-title {
+  height: var(--space-4);
+  width: 45%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+
+  .spinner {
+    animation-duration: 1.6s;
+  }
+}
+
+/* ================= Setting rows (label + control) ================= */
+
+.setting-row {
+  display: grid;
+  grid-template-columns: minmax(6rem, 8rem) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-md);
+}
+
+.setting-label {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.range-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.range-control input[type="range"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.range-hint {
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.range-value {
+  min-width: 3.25rem;
+  border-radius: var(--radius-xs);
+  background: var(--surface-muted);
+  padding: var(--space-0-5) var(--space-1-5);
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .setting-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+}
+
+/* ================= Motion utilities ================= */
+
+/* Entrance for a list item or block: set --i on each item for a stagger
+   (capped at 12 so long lists never wait). */
+.enter-rise {
+  /* backwards, not both: once finished the animation lets go, so later
+     transitions (hover lift, list leave) on the same element still work. */
+  animation: rise var(--dur-enter) var(--ease-out) backwards;
+  animation-delay: calc(min(var(--i, 0), 12) * var(--stagger));
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--enter-distance));
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Vue <Transition> presets — names are part of the spec. */
+
+/* route change */
+.page-enter-active {
+  transition: opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+}
+
+.page-leave-active {
+  transition: opacity var(--dur-fast) var(--ease-in);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(var(--enter-distance));
+}
+
+.page-leave-to {
+  opacity: 0;
+}
+
+/* swapping one panel for another in place (tabs, layouts) */
+.swap-enter-active {
+  transition: opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.swap-leave-active {
+  transition: opacity var(--dur-fast) var(--ease-in);
+}
+
+.swap-enter-from {
+  opacity: 0;
+  transform: translateY(calc(var(--enter-distance) / 2));
+}
+
+.swap-leave-to {
+  opacity: 0;
+}
+
+/* simple appear/disappear */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--dur-base) var(--ease-standard);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* <TransitionGroup> rows: enter, leave and FLIP reorder */
+.list-move,
+.list-enter-active {
+  transition: opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.list-leave-active {
+  transition: opacity var(--dur-fast) var(--ease-in),
+    transform var(--dur-fast) var(--ease-in);
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(calc(var(--enter-distance) * -1));
+}

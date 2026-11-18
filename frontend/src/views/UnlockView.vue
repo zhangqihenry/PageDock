@@ -5,6 +5,7 @@ import { api } from '../api/client.js';
 import { useAuthStore } from '../stores/auth.js';
 import { useLocaleStore } from '../stores/locale.js';
 import { describeError } from '../utils/errors.js';
+import Icon from '../components/ui/Icon.vue';
 
 const route = useRoute();
 const auth = useAuthStore();
@@ -57,33 +58,90 @@ async function unlock() {
 </script>
 
 <template>
-  <main class="wrap unlock-wrap">
-    <section class="card unlock-card" aria-labelledby="unlock-title">
-      <p class="unlock-label muted">{{ locale.t('catalog.protected') }}</p>
-      <h1 id="unlock-title">{{ locale.t('unlock.heading') }}</h1>
+  <main class="container page-narrow page unlock">
+    <section class="card card-pad unlock-card enter-rise" aria-labelledby="unlock-title">
+      <span class="unlock-icon" aria-hidden="true"><Icon name="lock" /></span>
+      <p class="eyebrow">{{ locale.t('catalog.protected') }}</p>
+      <h1 id="unlock-title" class="unlock-title">{{ locale.t('unlock.heading') }}</h1>
       <p v-if="title" class="unlock-site">{{ title }}</p>
-      <p class="unlock-copy muted">{{ locale.t('unlock.hint') }}</p>
+      <p class="unlock-copy">{{ locale.t('unlock.hint') }}</p>
       <p v-if="error" class="alert alert-error" role="alert">{{ error }}</p>
-      <form v-if="ready" class="stack" @submit.prevent="unlock">
-        <label>
-          {{ locale.t('form.sitePassword') }}
-          <input ref="passwordInput" v-model="password" type="password" autocomplete="current-password" required />
-        </label>
-        <button class="btn-solid" type="submit" :disabled="submitting">
-          {{ locale.t(submitting ? 'unlock.submitting' : 'unlock.submit') }}
-        </button>
-      </form>
-      <p v-else-if="!error" class="muted">{{ locale.t('common.loading') }}</p>
+        <!-- No transition here: the field must exist right away so it can
+             take focus as soon as the page is ready. -->
+        <form v-if="ready" class="stack unlock-form" @submit.prevent="unlock">
+          <label class="field">
+            {{ locale.t('form.sitePassword') }}
+            <input ref="passwordInput" v-model="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button class="btn btn-primary btn-lg btn-block" type="submit" :disabled="submitting" :aria-busy="submitting">
+            <span v-if="submitting" class="spinner" aria-hidden="true"></span>
+            {{ locale.t(submitting ? 'unlock.submitting' : 'unlock.submit') }}
+          </button>
+        </form>
+        <div v-else-if="!error" class="unlock-loading" aria-busy="true">
+          <span class="sr-only" role="status">{{ locale.t('common.loading') }}</span>
+          <span class="skeleton skeleton-input" aria-hidden="true"></span>
+          <span class="skeleton skeleton-input" aria-hidden="true"></span>
+        </div>
     </section>
   </main>
 </template>
 
 <style scoped>
-.unlock-wrap { max-width: 30rem; }
-.unlock-card { padding: clamp(1.25rem, 5vw, 2.25rem); overflow-wrap: anywhere; }
-.unlock-label { font-size: var(--type-helper); line-height: 1.5; font-weight: 600; }
-h1 { font-size: var(--type-page-title); font-weight: 700; line-height: 1.25; }
-.unlock-site { font-size: var(--type-section-title); font-weight: 600; line-height: 1.4; }
-.unlock-copy { font-size: var(--type-body); line-height: 1.6; }
-label, input, button { font-size: var(--type-control); line-height: 1.5; }
+.unlock-card {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: clamp(var(--space-4), 6vw, var(--space-12));
+  overflow-wrap: anywhere;
+}
+
+.unlock-icon {
+  display: grid;
+  place-items: center;
+  width: var(--space-12);
+  height: var(--space-12);
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.unlock-icon svg {
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+}
+
+.unlock-title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+}
+
+.unlock-site {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+}
+
+.unlock-copy {
+  margin: 0 0 var(--space-3);
+  color: var(--ink-muted);
+}
+
+.unlock-form,
+.unlock-loading {
+  margin-top: var(--space-1);
+}
+
+.unlock-loading {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.skeleton-input {
+  height: var(--control-lg);
+  border-radius: var(--radius-md);
+}
 </style>

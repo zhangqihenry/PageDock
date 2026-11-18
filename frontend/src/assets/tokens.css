@@ -1,0 +1,248 @@
+/*
+  PageDock design tokens — "静泊 Quiet Dock".
+  The single source of every color, size, radius, shadow, layer and motion
+  value the UI uses. Components reference these by name only; a literal
+  color or pixel value outside this file is a bug (see
+  docs/design-system.md, "Checklist").
+
+  Theme layering, lowest to highest precedence:
+    1. :root                      — default light palette (neutral + red)
+    2. :root[data-theme="dark"]   — default dark palette
+    3. inline style on <html>     — a hue-based color theme, written by
+                                    stores/colorTheme.js (and, before Vue
+                                    mounts, public/theme-init.js) from
+                                    theme/colorThemePalette.js. It only ever
+                                    overrides the 14 "themeable" color keys
+                                    marked [T] below.
+*/
+
+:root {
+  /* ---------- Color: surfaces & ink ---------- */
+  --bg: #fafaf9;                          /* [T] page canvas */
+  --surface: #ffffff;                     /* [T] cards, modals, header glass */
+  --surface-muted: #f3f3f1;               /* [T] hover fills, quiet wells */
+  --surface-sunken: #f5f5f3;              /* [T] inputs, tracks */
+  --ink: #17181c;                         /* [T] primary text */
+  --ink-muted: #5d5f66;                   /* [T] secondary text */
+  --ink-faint: #8a8c93;                   /* [T] meta, placeholders */
+  --border: #e7e6e3;                      /* [T] hairlines */
+  --border-strong: #cfcdc9;               /* [T] hover/emphasis borders */
+
+  /* ---------- Color: accent ---------- */
+  --accent: #c1121f;                      /* [T] */
+  --accent-hover: #9c0f19;                /* [T] */
+  --accent-ink: #ffffff;                  /* [T] text on accent */
+  --accent-soft: rgba(193, 18, 31, 0.08); /* [T] tinted fills */
+  --focus-ring: rgba(193, 18, 31, 0.32);  /* [T] */
+
+  /* ---------- Color: status (never themed) ---------- */
+  --positive: #1a7f37;
+  --positive-soft: rgba(26, 127, 55, 0.1);
+  --danger: #c62f2f;
+  --danger-soft: rgba(198, 47, 47, 0.09);
+  --info: #3457d5;
+  --info-soft: rgba(52, 87, 213, 0.1);
+  --warning: #9a6700;
+  --warning-soft: rgba(154, 103, 0, 0.1);
+
+  /* ---------- Color: derived ---------- */
+  --inverse-bg: var(--ink);               /* toasts */
+  --inverse-ink: var(--bg);
+  --overlay: rgba(15, 17, 22, 0.38);      /* modal scrim */
+  --glass: color-mix(in srgb, var(--bg) 78%, transparent);
+  --glow: color-mix(in srgb, var(--accent) 9%, transparent);
+  --selection: color-mix(in srgb, var(--accent) 20%, transparent);
+  --skeleton: color-mix(in srgb, var(--ink) 7%, transparent);
+  --skeleton-shine: color-mix(in srgb, var(--surface) 70%, transparent);
+  --thumb: var(--surface);                /* raised thumb in a sunken track */
+
+  /* ---------- Shadow ---------- */
+  --shadow-color: 220 20% 10%;
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.05);
+  --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.04),
+    0 2px 8px -2px hsl(var(--shadow-color) / 0.06);
+  --shadow-md: 0 2px 4px hsl(var(--shadow-color) / 0.04),
+    0 12px 28px -8px hsl(var(--shadow-color) / 0.14);
+  --shadow-lg: 0 4px 12px hsl(var(--shadow-color) / 0.06),
+    0 28px 64px -16px hsl(var(--shadow-color) / 0.24);
+
+  /* ---------- Typography ---------- */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+    Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "Cascadia Mono", Consolas,
+    "Liberation Mono", monospace;
+
+  --text-2xs: 0.6875rem;   /* 11 — badges, swatch captions */
+  --text-xs: 0.75rem;      /* 12 — meta, timestamps */
+  --text-sm: 0.8125rem;    /* 13 — helper text, secondary rows */
+  --text-base: 0.9375rem;  /* 15 — body UI, controls */
+  --text-md: 1rem;         /* 16 — inputs, row titles */
+  --text-lg: 1.125rem;     /* 18 — section titles */
+  --text-xl: 1.375rem;     /* 22 — modal titles */
+  --text-2xl: 1.75rem;     /* 28 — page titles */
+  --text-display: 2.25rem; /* 36 — catalog hero (visitor-adjustable) */
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --tracking-tight: -0.022em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.06em;
+
+  /* ---------- Space (4px grid) ---------- */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem; /* 2 */
+  --space-1: 0.25rem;    /* 4 */
+  --space-1-5: 0.375rem; /* 6 */
+  --space-2: 0.5rem;     /* 8 */
+  --space-3: 0.75rem;    /* 12 */
+  --space-4: 1rem;       /* 16 */
+  --space-5: 1.25rem;    /* 20 */
+  --space-6: 1.5rem;     /* 24 */
+  --space-8: 2rem;       /* 32 */
+  --space-10: 2.5rem;    /* 40 */
+  --space-12: 3rem;      /* 48 */
+  --space-16: 4rem;      /* 64 */
+  --space-20: 5rem;      /* 80 */
+
+  /* ---------- Sizes ---------- */
+  --content-max: 52rem;
+  --content-narrow: 28rem;
+  --measure: 36rem;       /* comfortable line length for prose */
+  --measure-wide: 42rem;  /* display headings */
+  --gutter: clamp(1rem, 4vw, 1.5rem);
+  --header-height: 3.75rem;
+  --control-sm: 2rem;      /* 32 */
+  --control-md: 2.375rem;  /* 38 */
+  --control-lg: 2.75rem;   /* 44 — touch-friendly primary actions */
+  --icon-sm: 0.875rem;
+  --icon-md: 1.0625rem;
+  --icon-lg: 1.5rem;
+  --modal-sm: 26rem;
+  --modal-md: 36rem;
+  --border-width: 1px;
+  --stroke: 2px;          /* indicator lines, spinner, rings */
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --size-brand: 1.75rem;  /* header mark */
+  --size-badge: 1.375rem; /* badge / toast-icon height */
+  --size-bullet: 0.375rem;/* status dots */
+  --range-track: 4px;
+  --range-thumb: 18px;
+  --blur-glass: 14px;     /* sticky header */
+  --blur-scrim: 6px;      /* modal backdrop */
+  --size-dot: 3px;       /* inline separators */
+  --ring-width: 3px;
+
+  /* ---------- Breakpoints ----------
+     CSS can't read custom properties inside @media, so these are written
+     as literals in media queries — and only these four values:
+       480px  narrow phone      — setting rows stack
+       560px  phone             — bottom sheets, 1-column grid, icon-only header
+       640px  large phone       — forms go 1-column, row path hidden
+       860px  tablet            — grid capped at 2 columns            */
+
+  /* ---------- Radius ---------- */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;   /* controls */
+  --radius-lg: 14px;   /* cards */
+  --radius-xl: 20px;   /* modals, hero blocks */
+  --radius-pill: 999px;
+
+  /* ---------- Layers ---------- */
+  --z-base: 0;
+  --z-raised: 1;
+  --z-header: 50;
+  --z-overlay: 100;
+  --z-toast: 200;
+
+  /* ---------- Motion ---------- */
+  --dur-instant: 90ms;   /* press feedback */
+  --dur-fast: 150ms;     /* hover, color, border */
+  --dur-base: 240ms;     /* small moves, tab indicator, exits */
+  --dur-slow: 360ms;     /* modal/sheet enter */
+  --dur-enter: 520ms;    /* page & list entrance */
+  --stagger: 36ms;       /* per item in an entering list (cap: 12 items) */
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);     /* default for state changes */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);       /* entrances — fast then settle */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);           /* exits — leave quickly */
+  --ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1); /* tiny pops only (≤ 4px / 1.04x) */
+
+  --lift: -2px;          /* hover elevation for interactive cards */
+  --enter-distance: 10px;
+  --nudge: 3px;          /* hover drift of arrows/icons toward their action */
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0e0f12;
+  --surface: #16171b;
+  --surface-muted: #1e1f24;
+  --surface-sunken: #0b0c0e;
+  --ink: #f2f2f0;
+  --ink-muted: #a4a6ad;
+  --ink-faint: #74767e;
+  --border: #26272d;
+  --border-strong: #3a3b43;
+
+  --accent: #ff6a52;
+  --accent-hover: #ff8a75;
+  --accent-ink: #1a0f0c;
+  --accent-soft: rgba(255, 106, 82, 0.13);
+  --focus-ring: rgba(255, 106, 82, 0.42);
+
+  --positive: #4ac26b;
+  --positive-soft: rgba(74, 194, 107, 0.13);
+  --danger: #ff7b72;
+  --danger-soft: rgba(255, 123, 114, 0.13);
+  --info: #86a3ff;
+  --info-soft: rgba(134, 163, 255, 0.13);
+  --warning: #e3b341;
+  --warning-soft: rgba(227, 179, 65, 0.13);
+
+  --overlay: rgba(0, 0, 0, 0.58);
+  --glass: color-mix(in srgb, var(--bg) 72%, transparent);
+  --glow: color-mix(in srgb, var(--accent) 11%, transparent);
+  --skeleton: color-mix(in srgb, var(--ink) 8%, transparent);
+  --skeleton-shine: color-mix(in srgb, var(--ink) 6%, transparent);
+  --thumb: color-mix(in srgb, var(--ink) 12%, var(--surface));
+
+  --shadow-color: 0 0% 0%;
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.3);
+  --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.3),
+    0 2px 8px -2px hsl(var(--shadow-color) / 0.35);
+  --shadow-md: 0 2px 4px hsl(var(--shadow-color) / 0.3),
+    0 14px 30px -8px hsl(var(--shadow-color) / 0.55);
+  --shadow-lg: 0 4px 12px hsl(var(--shadow-color) / 0.35),
+    0 30px 70px -16px hsl(var(--shadow-color) / 0.7);
+
+  color-scheme: dark;
+}
+
+/* Motion off: every duration collapses to (almost) zero and travel
+   distances to none, so components need no reduced-motion branches of
+   their own — they only ever reference these tokens. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 1ms;
+    --dur-fast: 1ms;
+    --dur-base: 1ms;
+    --dur-slow: 1ms;
+    --dur-enter: 1ms;
+    --stagger: 0ms;
+    --lift: 0px;
+    --enter-distance: 0px;
+    --nudge: 0px;
+  }
+}

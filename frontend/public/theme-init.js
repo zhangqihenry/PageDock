@@ -22,35 +22,35 @@
       root.setProperty(name, value);
     };
     if (mode === 'dark') {
-      set('--bg', 'hsl(' + hue + ', 16%, 11%)');
-      set('--surface', 'hsl(' + hue + ', 16%, 14%)');
-      set('--surface-muted', 'hsl(' + hue + ', 16%, 17%)');
-      set('--surface-sunken', 'hsl(' + hue + ', 16%, 17%)');
-      set('--ink', 'hsl(' + hue + ', 12%, 92%)');
-      set('--ink-muted', 'hsl(' + hue + ', 10%, 68%)');
-      set('--ink-faint', 'hsl(' + hue + ', 9%, 48%)');
-      set('--border', 'hsl(' + hue + ', 14%, 23%)');
-      set('--border-strong', 'hsl(' + hue + ', 12%, 92%)');
-      set('--accent', 'hsl(' + hue + ', 52%, 64%)');
-      set('--accent-hover', 'hsl(' + hue + ', 55%, 70%)');
-      set('--accent-ink', 'hsl(' + hue + ', 25%, 14%)');
-      set('--accent-soft', 'hsla(' + hue + ', 52%, 64%, 0.16)');
-      set('--focus-ring', 'hsla(' + hue + ', 52%, 64%, 0.4)');
+      set('--bg', 'hsl(' + hue + ', 14%, 7%)');
+      set('--surface', 'hsl(' + hue + ', 13%, 10.5%)');
+      set('--surface-muted', 'hsl(' + hue + ', 12%, 14.5%)');
+      set('--surface-sunken', 'hsl(' + hue + ', 14%, 5.5%)');
+      set('--ink', 'hsl(' + hue + ', 14%, 94%)');
+      set('--ink-muted', 'hsl(' + hue + ', 9%, 68%)');
+      set('--ink-faint', 'hsl(' + hue + ', 7%, 49%)');
+      set('--border', 'hsl(' + hue + ', 11%, 17%)');
+      set('--border-strong', 'hsl(' + hue + ', 9%, 27%)');
+      set('--accent', 'hsl(' + hue + ', 62%, 72%)');
+      set('--accent-hover', 'hsl(' + hue + ', 70%, 79%)');
+      set('--accent-ink', 'hsl(' + hue + ', 35%, 10%)');
+      set('--accent-soft', 'hsla(' + hue + ', 62%, 72%, 0.13)');
+      set('--focus-ring', 'hsla(' + hue + ', 62%, 72%, 0.42)');
     } else {
-      set('--bg', 'hsl(' + hue + ', 22%, 94%)');
-      set('--surface', 'hsl(' + hue + ', 16%, 97%)');
-      set('--surface-muted', 'hsl(' + hue + ', 20%, 91%)');
-      set('--surface-sunken', 'hsl(' + hue + ', 18%, 90%)');
-      set('--ink', 'hsl(' + hue + ', 18%, 22%)');
-      set('--ink-muted', 'hsl(' + hue + ', 13%, 42%)');
-      set('--ink-faint', 'hsl(' + hue + ', 11%, 60%)');
-      set('--border', 'hsl(' + hue + ', 16%, 84%)');
-      set('--border-strong', 'hsl(' + hue + ', 18%, 22%)');
-      set('--accent', 'hsl(' + hue + ', 36%, 40%)');
-      set('--accent-hover', 'hsl(' + hue + ', 38%, 33%)');
+      set('--bg', 'hsl(' + hue + ', 24%, 97.5%)');
+      set('--surface', 'hsl(' + hue + ', 30%, 99.6%)');
+      set('--surface-muted', 'hsl(' + hue + ', 20%, 94.5%)');
+      set('--surface-sunken', 'hsl(' + hue + ', 20%, 95.5%)');
+      set('--ink', 'hsl(' + hue + ', 22%, 13%)');
+      set('--ink-muted', 'hsl(' + hue + ', 9%, 38%)');
+      set('--ink-faint', 'hsl(' + hue + ', 7%, 54%)');
+      set('--border', 'hsl(' + hue + ', 16%, 90%)');
+      set('--border-strong', 'hsl(' + hue + ', 12%, 79%)');
+      set('--accent', 'hsl(' + hue + ', 44%, 40%)');
+      set('--accent-hover', 'hsl(' + hue + ', 48%, 33%)');
       set('--accent-ink', '#ffffff');
-      set('--accent-soft', 'hsla(' + hue + ', 36%, 40%, 0.1)');
-      set('--focus-ring', 'hsla(' + hue + ', 36%, 40%, 0.35)');
+      set('--accent-soft', 'hsla(' + hue + ', 44%, 40%, 0.09)');
+      set('--focus-ring', 'hsla(' + hue + ', 60%, 48%, 0.32)');
     }
   }
 

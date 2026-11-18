@@ -3,6 +3,7 @@ import { computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.js';
 import { useLocaleStore } from '../stores/locale.js';
+import Segmented from '../components/ui/Segmented.vue';
 import SitesTab from '../components/admin/SitesTab.vue';
 import UploadTab from '../components/admin/UploadTab.vue';
 import CategoriesTab from '../components/admin/CategoriesTab.vue';
@@ -17,22 +18,26 @@ const route = useRoute();
 const router = useRouter();
 
 const TABS = ['sites', 'upload', 'categories', 'settings'];
-
-const activeTab = computed(() => {
-  const requested = route.query.tab;
-  return TABS.includes(requested) ? requested : 'sites';
-});
-
-// The panels don't repeat their tab's name as a visible heading, so the
-// active tab's label is what names the region for assistive tech.
 const TAB_LABEL_KEYS = {
   sites: 'admin.tabSites',
   upload: 'admin.tabUpload',
   categories: 'admin.tabCategories',
   settings: 'admin.tabSettings',
 };
-const activeTabLabel = computed(() =>
-  locale.t(TAB_LABEL_KEYS[activeTab.value]),
+const TAB_COMPONENTS = {
+  sites: SitesTab,
+  upload: UploadTab,
+  categories: CategoriesTab,
+  settings: SettingsTab,
+};
+
+const activeTab = computed(() => {
+  const requested = route.query.tab;
+  return TABS.includes(requested) ? requested : 'sites';
+});
+
+const tabOptions = computed(() =>
+  TABS.map((tab) => ({ value: tab, label: locale.t(TAB_LABEL_KEYS[tab]) })),
 );
 
 function selectTab(tab) {
@@ -51,51 +56,50 @@ watch(() => auth.ready, guard);
 </script>
 
 <template>
-  <main class="wrap">
-    <p v-if="!auth.ready" class="muted">{{ locale.t('common.loading') }}</p>
+  <main class="container page admin">
+    <div v-if="!auth.ready" class="admin-loading" aria-busy="true">
+      <span class="sr-only" role="status">{{ locale.t('common.loading') }}</span>
+      <span class="skeleton skeleton-title" aria-hidden="true"></span>
+    </div>
 
     <template v-else-if="auth.authenticated">
-      <nav class="admin-tabs" aria-label="admin sections">
-        <button
-          type="button"
-          class="admin-tab"
-          :class="{ 'is-active': activeTab === 'sites' }"
-          @click="selectTab('sites')"
-        >
-          {{ locale.t('admin.tabSites') }}
-        </button>
-        <button
-          type="button"
-          class="admin-tab"
-          :class="{ 'is-active': activeTab === 'upload' }"
-          @click="selectTab('upload')"
-        >
-          {{ locale.t('admin.tabUpload') }}
-        </button>
-        <button
-          type="button"
-          class="admin-tab"
-          :class="{ 'is-active': activeTab === 'categories' }"
-          @click="selectTab('categories')"
-        >
-          {{ locale.t('admin.tabCategories') }}
-        </button>
-        <button
-          type="button"
-          class="admin-tab"
-          :class="{ 'is-active': activeTab === 'settings' }"
-          @click="selectTab('settings')"
-        >
-          {{ locale.t('admin.tabSettings') }}
-        </button>
-      </nav>
+      <header class="page-head enter-rise">
+        <h1 class="page-title">{{ locale.t('admin.heading') }}</h1>
+      </header>
 
-      <section class="admin-panel" :aria-label="activeTabLabel">
-        <SitesTab v-if="activeTab === 'sites'" />
-        <UploadTab v-else-if="activeTab === 'upload'" @uploaded="selectTab('sites')" />
-        <CategoriesTab v-else-if="activeTab === 'categories'" />
-        <SettingsTab v-else-if="activeTab === 'settings'" />
+      <Segmented
+        class="admin-tabs enter-rise"
+        style="--i: 1"
+        :model-value="activeTab"
+        :options="tabOptions"
+        mode="tabs"
+        variant="underline"
+        id-prefix="admin-tab"
+        controls="admin-panel"
+        :aria-label="locale.t('admin.heading')"
+        @update:model-value="selectTab"
+      />
+
+      <section
+        id="admin-panel"
+        class="admin-panel"
+        role="tabpanel"
+        :aria-labelledby="`admin-tab-${activeTab}`"
+      >
+        <Transition name="swap" mode="out-in">
+          <component
+            :is="TAB_COMPONENTS[activeTab]"
+            :key="activeTab"
+            @uploaded="selectTab('sites')"
+          />
+        </Transition>
       </section>
     </template>
   </main>
 </template>
+
+<style scoped>
+.admin-tabs {
+  margin-bottom: var(--space-6);
+}
+</style>

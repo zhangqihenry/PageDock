@@ -104,6 +104,7 @@ const dictionaries = {
     'common.loading': '加载中…',
     'common.save': '保存',
     'common.cancel': '取消',
+    'common.close': '关闭',
 
     'catalog.tally': ({ count }) => `共 ${count} 个网页`,
     'catalog.empty': '目录暂时为空，点击右上角「登录」发布第一个网页。',
@@ -134,6 +135,7 @@ const dictionaries = {
     'admin.tabUpload': '上传网页',
     'admin.tabCategories': '分类管理',
     'admin.tabSettings': '网站设置',
+    'admin.heading': '管理后台',
     'admin.emptyState': '还没有上传网页。',
     'admin.limits': ({ upload, extracted, files }) =>
       `上传上限 ${upload}；解压上限 ${extracted}；最多 ${files} 个条目。`,
@@ -161,6 +163,7 @@ const dictionaries = {
     'form.keepPassword': '留空保留原密码；新密码至少 6 个字符。',
     'form.overwriteKeepsProtection': '覆盖已加密的网页时，不勾选将保留原密码；如需取消加密，请在网页列表中编辑。',
     'form.fileLabel': 'HTML 或 ZIP 文件',
+    'form.dropHint': '点击选择，或把文件拖到这里',
     'form.linkUrlLabel': '目标网址',
     'form.linkUrlPlaceholder': 'https://example.com',
     'form.descriptionPlaceholder': '简单介绍这个网页的用途（最多 300 个字符）',
@@ -362,6 +365,7 @@ const dictionaries = {
     'common.loading': 'Loading…',
     'common.save': 'Save',
     'common.cancel': 'Cancel',
+    'common.close': 'Close',
 
     'catalog.tally': ({ count }) => `${count} page${count === 1 ? '' : 's'} total`,
     'catalog.empty': 'The catalog is empty. Click "Log in" in the top right to publish the first one.',
@@ -392,6 +396,7 @@ const dictionaries = {
     'admin.tabUpload': 'Upload page',
     'admin.tabCategories': 'Categories',
     'admin.tabSettings': 'Site settings',
+    'admin.heading': 'Dashboard',
     'admin.emptyState': 'No pages uploaded yet.',
     'admin.limits': ({ upload, extracted, files }) =>
       `Upload limit ${upload}; extracted limit ${extracted}; up to ${files} entries.`,
@@ -419,6 +424,7 @@ const dictionaries = {
     'form.keepPassword': 'Leave blank to keep the password; a new password needs at least 6 characters.',
     'form.overwriteKeepsProtection': 'When replacing a protected page, leaving this unchecked keeps its password. To remove protection, edit the page in the list.',
     'form.fileLabel': 'HTML or ZIP file',
+    'form.dropHint': 'Click to choose, or drop a file here',
     'form.linkUrlLabel': 'Target URL',
     'form.linkUrlPlaceholder': 'https://example.com',
     'form.descriptionPlaceholder': 'Briefly describe what this page is for (up to 300 characters)',

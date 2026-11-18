@@ -47,15 +47,18 @@ export const COLOR_THEME_HUES = [
   { id: 'coral', hue: 350 },
 ];
 
-// The plain black/white/red look — not hue-based, so it's kept as its own
-// fixed pair rather than run through the formula below.
+// The plain neutral look with the red accent — not hue-based, so it's kept
+// as its own fixed pair rather than run through the formula below. These
+// two values must match --bg/--accent in assets/tokens.css.
 export const DEFAULT_PALETTE = {
-  light: { bg: '#ffffff', accent: '#c1121f' },
-  dark: { bg: '#101114', accent: '#ff6a52' },
+  light: { bg: '#fafaf9', accent: '#c1121f' },
+  dark: { bg: '#0e0f12', accent: '#ff6a52' },
 };
 
 // Every custom property a color theme touches — used to clear all of them
 // when switching back to 'default', so no stale inline override lingers.
+// These are exactly the keys marked [T] in assets/tokens.css; everything
+// else (status colors, shadows, derived glass/glow) is never themed.
 export const PALETTE_KEYS = [
   '--bg',
   '--surface',
@@ -73,40 +76,44 @@ export const PALETTE_KEYS = [
   '--focus-ring',
 ];
 
+// "静泊 Quiet Dock" recipe (docs/design-system.md, "Color themes"): the hue
+// only tints — neutrals stay low-saturation so every one of the 36 themes
+// keeps the same contrast steps as the default look; only the accent
+// carries real chroma.
 export function computePalette(hue, mode) {
   if (mode === 'dark') {
     return {
-      '--bg': `hsl(${hue}, 16%, 11%)`,
-      '--surface': `hsl(${hue}, 16%, 14%)`,
-      '--surface-muted': `hsl(${hue}, 16%, 17%)`,
-      '--surface-sunken': `hsl(${hue}, 16%, 17%)`,
-      '--ink': `hsl(${hue}, 12%, 92%)`,
-      '--ink-muted': `hsl(${hue}, 10%, 68%)`,
-      '--ink-faint': `hsl(${hue}, 9%, 48%)`,
-      '--border': `hsl(${hue}, 14%, 23%)`,
-      '--border-strong': `hsl(${hue}, 12%, 92%)`,
-      '--accent': `hsl(${hue}, 52%, 64%)`,
-      '--accent-hover': `hsl(${hue}, 55%, 70%)`,
-      '--accent-ink': `hsl(${hue}, 25%, 14%)`,
-      '--accent-soft': `hsla(${hue}, 52%, 64%, 0.16)`,
-      '--focus-ring': `hsla(${hue}, 52%, 64%, 0.4)`,
+      '--bg': `hsl(${hue}, 14%, 7%)`,
+      '--surface': `hsl(${hue}, 13%, 10.5%)`,
+      '--surface-muted': `hsl(${hue}, 12%, 14.5%)`,
+      '--surface-sunken': `hsl(${hue}, 14%, 5.5%)`,
+      '--ink': `hsl(${hue}, 14%, 94%)`,
+      '--ink-muted': `hsl(${hue}, 9%, 68%)`,
+      '--ink-faint': `hsl(${hue}, 7%, 49%)`,
+      '--border': `hsl(${hue}, 11%, 17%)`,
+      '--border-strong': `hsl(${hue}, 9%, 27%)`,
+      '--accent': `hsl(${hue}, 62%, 72%)`,
+      '--accent-hover': `hsl(${hue}, 70%, 79%)`,
+      '--accent-ink': `hsl(${hue}, 35%, 10%)`,
+      '--accent-soft': `hsla(${hue}, 62%, 72%, 0.13)`,
+      '--focus-ring': `hsla(${hue}, 62%, 72%, 0.42)`,
     };
   }
   return {
-    '--bg': `hsl(${hue}, 22%, 94%)`,
-    '--surface': `hsl(${hue}, 16%, 97%)`,
-    '--surface-muted': `hsl(${hue}, 20%, 91%)`,
-    '--surface-sunken': `hsl(${hue}, 18%, 90%)`,
-    '--ink': `hsl(${hue}, 18%, 22%)`,
-    '--ink-muted': `hsl(${hue}, 13%, 42%)`,
-    '--ink-faint': `hsl(${hue}, 11%, 60%)`,
-    '--border': `hsl(${hue}, 16%, 84%)`,
-    '--border-strong': `hsl(${hue}, 18%, 22%)`,
-    '--accent': `hsl(${hue}, 36%, 40%)`,
-    '--accent-hover': `hsl(${hue}, 38%, 33%)`,
+    '--bg': `hsl(${hue}, 24%, 97.5%)`,
+    '--surface': `hsl(${hue}, 30%, 99.6%)`,
+    '--surface-muted': `hsl(${hue}, 20%, 94.5%)`,
+    '--surface-sunken': `hsl(${hue}, 20%, 95.5%)`,
+    '--ink': `hsl(${hue}, 22%, 13%)`,
+    '--ink-muted': `hsl(${hue}, 9%, 38%)`,
+    '--ink-faint': `hsl(${hue}, 7%, 54%)`,
+    '--border': `hsl(${hue}, 16%, 90%)`,
+    '--border-strong': `hsl(${hue}, 12%, 79%)`,
+    '--accent': `hsl(${hue}, 44%, 40%)`,
+    '--accent-hover': `hsl(${hue}, 48%, 33%)`,
     '--accent-ink': '#ffffff',
-    '--accent-soft': `hsla(${hue}, 36%, 40%, 0.1)`,
-    '--focus-ring': `hsla(${hue}, 36%, 40%, 0.35)`,
+    '--accent-soft': `hsla(${hue}, 44%, 40%, 0.09)`,
+    '--focus-ring': `hsla(${hue}, 60%, 48%, 0.32)`,
   };
 }
 

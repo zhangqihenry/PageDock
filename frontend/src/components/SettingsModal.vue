@@ -14,7 +14,11 @@ import { useLocaleStore } from '../stores/locale.js';
 import { useThemeStore } from '../stores/theme.js';
 import { useTypographyStore } from '../stores/typography.js';
 import { COLOR_THEME_HUES, previewColors } from '../theme/colorThemePalette.js';
+import { rangeFill, withViewTransition } from '../utils/motion.js';
 import TypographySettingGroup from './TypographySettingGroup.vue';
+import BaseModal from './ui/BaseModal.vue';
+import Icon from './ui/Icon.vue';
+import Segmented from './ui/Segmented.vue';
 
 defineProps({
   open: { type: Boolean, default: false },
@@ -75,102 +79,81 @@ const FOOTER_TYPOGRAPHY_GROUP = {
   size: 'footerSize',
 };
 
+const themeOptions = computed(() => [
+  { value: 'light', label: locale.t('displaySettings.themeLight') },
+  { value: 'dark', label: locale.t('displaySettings.themeDark') },
+]);
+const layoutOptions = computed(() => [
+  { value: 'table', label: locale.t('displaySettings.layoutTable') },
+  { value: 'grid', label: locale.t('displaySettings.layoutGrid') },
+]);
+
+// Light/dark and color-theme switches repaint the whole page at once, so
+// they crossfade (where the browser supports it) instead of snapping.
 function setTheme(value) {
   if (theme.theme !== value) {
-    theme.toggle();
+    withViewTransition(() => theme.toggle());
+  }
+}
+
+function setColorTheme(id) {
+  if (colorTheme.theme !== id) {
+    withViewTransition(() => colorTheme.setTheme(id));
   }
 }
 
 function close() {
   emit('close');
 }
-
-function onKeydown(event) {
-  if (event.key === 'Escape') {
-    close();
-  }
-}
 </script>
 
 <template>
-  <Teleport to="body">
-    <div
-      v-if="open"
-      class="modal-backdrop"
-      @click.self="close"
-      @keydown="onKeydown"
-    >
-      <div
-        class="modal-card card settings-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="settings-modal-title"
-      >
-        <button
-          type="button"
-          class="icon-button modal-close"
-          :aria-label="locale.t('common.cancel')"
-          @click="close"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            aria-hidden="true"
+  <BaseModal
+    :open="open"
+    size="md"
+    :title="locale.t('displaySettings.modalTitle')"
+    @close="close"
+  >
+    <div class="settings">
+      <section class="settings-section">
+        <div class="setting-row">
+          <span class="setting-label">{{ locale.t('displaySettings.appearance') }}</span>
+          <Segmented
+            :model-value="theme.theme"
+            :options="themeOptions"
+            :aria-label="locale.t('displaySettings.appearance')"
+            block
+            @update:model-value="setTheme"
+          />
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3 class="settings-heading">{{ locale.t('displaySettings.colorTheme') }}</h3>
+        <div class="swatches" role="group" :aria-label="locale.t('displaySettings.colorTheme')">
+          <button
+            v-for="opt in colorThemeOptions"
+            :key="opt.id"
+            type="button"
+            class="swatch-item"
+            :class="{ 'is-active': colorTheme.theme === opt.id }"
+            :aria-pressed="colorTheme.theme === opt.id"
+            :title="locale.t(opt.labelKey)"
+            @click="setColorTheme(opt.id)"
           >
-            <path d="M6 6l12 12M18 6L6 18" />
-          </svg>
-        </button>
-
-        <h2 id="settings-modal-title">{{ locale.t('displaySettings.modalTitle') }}</h2>
-
-        <div class="settings-section">
-          <span class="settings-label">{{ locale.t('displaySettings.appearance') }}</span>
-          <div class="segmented" role="group">
-            <button
-              type="button"
-              class="segmented-option"
-              :class="{ 'is-active': theme.theme === 'light' }"
-              @click="setTheme('light')"
+            <span
+              class="swatch"
+              :style="{ '--swatch-bg': opt.bg, '--swatch-accent': opt.accent }"
             >
-              {{ locale.t('displaySettings.themeLight') }}
-            </button>
-            <button
-              type="button"
-              class="segmented-option"
-              :class="{ 'is-active': theme.theme === 'dark' }"
-              @click="setTheme('dark')"
-            >
-              {{ locale.t('displaySettings.themeDark') }}
-            </button>
-          </div>
+              <Icon v-if="colorTheme.theme === opt.id" name="check" class="swatch-check" />
+            </span>
+            <span class="swatch-label">{{ locale.t(opt.labelKey) }}</span>
+          </button>
         </div>
+      </section>
 
-        <div class="settings-section">
-          <span class="settings-label">{{ locale.t('displaySettings.colorTheme') }}</span>
-          <div class="swatch-row" role="group">
-            <button
-              v-for="opt in colorThemeOptions"
-              :key="opt.id"
-              type="button"
-              class="swatch-item"
-              :class="{ 'is-active': colorTheme.theme === opt.id }"
-              :aria-pressed="colorTheme.theme === opt.id"
-              :title="locale.t(opt.labelKey)"
-              @click="colorTheme.setTheme(opt.id)"
-            >
-              <span
-                class="swatch"
-                :style="{ '--swatch-bg': opt.bg, '--swatch-accent': opt.accent }"
-              ></span>
-              <span class="swatch-label">{{ locale.t(opt.labelKey) }}</span>
-            </button>
-          </div>
-        </div>
-
-        <h3 class="settings-group-title">{{ locale.t('typography.sectionTitle') }}</h3>
+      <section class="settings-section">
+        <h3 class="settings-heading">{{ locale.t('typography.sectionTitle') }}</h3>
 
         <TypographySettingGroup
           v-for="group in TOP_TYPOGRAPHY_GROUPS"
@@ -178,37 +161,24 @@ function onKeydown(event) {
           v-bind="group"
         />
 
-        <div class="settings-section">
-          <span class="settings-label">{{ locale.t('displaySettings.layout') }}</span>
-          <div class="segmented" role="group">
-            <button
-              type="button"
-              class="segmented-option"
-              :class="{ 'is-active': display.layout === 'table' }"
-              @click="display.setLayout('table')"
-            >
-              {{ locale.t('displaySettings.layoutTable') }}
-            </button>
-            <button
-              type="button"
-              class="segmented-option"
-              :class="{ 'is-active': display.layout === 'grid' }"
-              @click="display.setLayout('grid')"
-            >
-              {{ locale.t('displaySettings.layoutGrid') }}
-            </button>
+        <div class="panel-inset">
+          <div class="setting-row">
+            <span class="setting-label">{{ locale.t('displaySettings.layout') }}</span>
+            <Segmented
+              :model-value="display.layout"
+              :options="layoutOptions"
+              :aria-label="locale.t('displaySettings.layout')"
+              block
+              @update:model-value="display.setLayout"
+            />
           </div>
-        </div>
 
-        <template v-if="display.layout === 'table'">
-          <div class="settings-section">
-            <label class="settings-label" for="row-padding-range">
+          <div v-if="display.layout === 'table'" class="setting-row">
+            <label class="setting-label" for="row-padding-range">
               {{ locale.t('displaySettings.rowSpacing') }}
             </label>
-            <div class="settings-range">
-              <span class="settings-range-hint">{{
-                locale.t('displaySettings.rowSpacingCompact')
-              }}</span>
+            <div class="range-control">
+              <span class="range-hint">{{ locale.t('displaySettings.rowSpacingCompact') }}</span>
               <input
                 id="row-padding-range"
                 type="range"
@@ -216,67 +186,173 @@ function onKeydown(event) {
                 :max="ROW_PADDING_MAX"
                 step="0.125"
                 :value="display.rowPadding"
+                :style="{ '--range-fill': rangeFill(display.rowPadding, ROW_PADDING_MIN, ROW_PADDING_MAX) }"
                 @input="display.setRowPadding($event.target.valueAsNumber)"
               />
-              <span class="settings-range-hint">{{
-                locale.t('displaySettings.rowSpacingSpacious')
-              }}</span>
+              <span class="range-hint">{{ locale.t('displaySettings.rowSpacingSpacious') }}</span>
             </div>
           </div>
 
-          <TypographySettingGroup
-            v-for="group in TABLE_TYPOGRAPHY_GROUPS"
-            :key="group.titleKey"
-            v-bind="group"
-          />
-        </template>
-
-        <template v-else>
-          <div class="settings-section">
-            <label class="settings-label" for="grid-columns-range">
-              {{ locale.t('displaySettings.columnsLabel') }}
-            </label>
-            <div class="settings-range">
-              <input
-                id="grid-columns-range"
-                type="range"
-                :min="GRID_COLUMNS_MIN"
-                :max="GRID_COLUMNS_MAX"
-                step="1"
-                :value="display.gridColumns"
-                @input="display.setGridColumns($event.target.valueAsNumber)"
-              />
-              <span class="settings-range-value mono">{{ display.gridColumns }}</span>
+          <template v-else>
+            <div class="setting-row">
+              <label class="setting-label" for="grid-columns-range">
+                {{ locale.t('displaySettings.columnsLabel') }}
+              </label>
+              <div class="range-control">
+                <input
+                  id="grid-columns-range"
+                  type="range"
+                  :min="GRID_COLUMNS_MIN"
+                  :max="GRID_COLUMNS_MAX"
+                  step="1"
+                  :value="display.gridColumns"
+                  :style="{ '--range-fill': rangeFill(display.gridColumns, GRID_COLUMNS_MIN, GRID_COLUMNS_MAX) }"
+                  @input="display.setGridColumns($event.target.valueAsNumber)"
+                />
+                <span class="range-value mono">{{ display.gridColumns }}</span>
+              </div>
             </div>
-          </div>
 
-          <div class="settings-section">
-            <label class="settings-label" for="tile-height-range">
-              {{ locale.t('displaySettings.tileHeight') }}
-            </label>
-            <div class="settings-range">
-              <input
-                id="tile-height-range"
-                type="range"
-                :min="TILE_HEIGHT_MIN"
-                :max="TILE_HEIGHT_MAX"
-                step="10"
-                :value="display.tileHeight"
-                @input="display.setTileHeight($event.target.valueAsNumber)"
-              />
-              <span class="settings-range-value mono">{{ display.tileHeight }}px</span>
+            <div class="setting-row">
+              <label class="setting-label" for="tile-height-range">
+                {{ locale.t('displaySettings.tileHeight') }}
+              </label>
+              <div class="range-control">
+                <input
+                  id="tile-height-range"
+                  type="range"
+                  :min="TILE_HEIGHT_MIN"
+                  :max="TILE_HEIGHT_MAX"
+                  step="10"
+                  :value="display.tileHeight"
+                  :style="{ '--range-fill': rangeFill(display.tileHeight, TILE_HEIGHT_MIN, TILE_HEIGHT_MAX) }"
+                  @input="display.setTileHeight($event.target.valueAsNumber)"
+                />
+                <span class="range-value mono">{{ display.tileHeight }}px</span>
+              </div>
             </div>
-          </div>
+          </template>
+        </div>
 
-          <TypographySettingGroup
-            v-for="group in GRID_TYPOGRAPHY_GROUPS"
-            :key="group.titleKey"
-            v-bind="group"
-          />
-        </template>
+        <TypographySettingGroup
+          v-for="group in display.layout === 'table' ? TABLE_TYPOGRAPHY_GROUPS : GRID_TYPOGRAPHY_GROUPS"
+          :key="group.titleKey"
+          v-bind="group"
+        />
 
         <TypographySettingGroup v-bind="FOOTER_TYPOGRAPHY_GROUP" />
-      </div>
+      </section>
     </div>
-  </Teleport>
+  </BaseModal>
 </template>
+
+<style scoped>
+.settings {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.settings-section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.settings-section + .settings-section {
+  border-top: var(--border-width) solid var(--border);
+  padding-top: var(--space-5);
+}
+
+.settings-heading {
+  margin: 0;
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+/* ---------- Color swatches ---------- */
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--space-16), 1fr));
+  gap: var(--space-1);
+  max-height: 14rem;
+  margin: calc(var(--space-1) * -1);
+  padding: var(--space-1);
+  overflow-y: auto;
+}
+
+.swatch-item {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1-5);
+  min-width: 0;
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-0-5);
+  color: var(--ink-muted);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  transition: background-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
+}
+
+.swatch-item:hover {
+  background: var(--surface-muted);
+  color: var(--ink);
+}
+
+.swatch-item.is-active {
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+}
+
+.swatch-item:focus-visible {
+  outline-offset: calc(var(--focus-width) * -1);
+}
+
+/* Filled with that theme's real --bg and ringed with its real --accent —
+   both from the same formula the theme applies, never an approximation. */
+.swatch {
+  display: grid;
+  place-items: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border: var(--ring-width) solid var(--swatch-accent, var(--border));
+  border-radius: 50%;
+  background: var(--swatch-bg, var(--surface));
+  box-shadow: 0 0 0 var(--border-width) var(--border);
+  color: var(--swatch-accent);
+  transition: transform var(--dur-base) var(--ease-spring),
+    box-shadow var(--dur-fast) var(--ease-standard);
+}
+
+.swatch-item:hover .swatch {
+  transform: scale(1.08);
+}
+
+.swatch-item.is-active .swatch {
+  box-shadow: 0 0 0 var(--stroke) var(--surface), 0 0 0 calc(var(--stroke) * 2) var(--ink);
+}
+
+.swatch-check {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  stroke-width: 3;
+  animation: pop var(--dur-base) var(--ease-spring) both;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+.swatch-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
