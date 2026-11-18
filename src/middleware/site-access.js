@@ -96,6 +96,10 @@ export function createSiteAccess(config, siteService, dynamicTools = []) {
       ? toolIds.get(parsed.pathId.toLowerCase()) || parsed.pathId
       : parsed.pathId;
     const access = await siteService.getAccess(pathId);
+    // The site dispatcher further down needs the same lookup to decide
+    // whether this path is a published site; hand it over instead of
+    // having every page and asset request read the metadata twice.
+    res.locals.siteAccess = { pathId, access };
     if (!access?.passwordHash) return next();
     res.set('Cache-Control', 'private, no-store');
     res.vary('Cookie');

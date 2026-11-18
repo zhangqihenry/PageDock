@@ -30,5 +30,13 @@ export const useCatalogStore = defineStore('catalog', {
       this.loaded = true;
       return data;
     },
+    // Refreshes only the footer counters, leaving the site list and
+    // settings (which an admin form may be editing) untouched.
+    async refreshStats() {
+      const stats = await api.get('/catalog/stats');
+      if (stats) {
+        this.stats = stats;
+      }
+    },
   },
 });

@@ -80,15 +80,27 @@ export async function createApp(options = {}) {
   app.locals.assetVersion = packageVersion;
 
   // Built frontend static assets (hashed JS/CSS/images under /assets/*,
-  // plus the favicon/logo). Stateless and public, so it's served ahead of
-  // session() with no exposure beyond the one header set manually here.
+  // plus unhashed public files such as theme-init.js). Stateless and
+  // public, so it's served ahead of session() with no exposure beyond the
+  // headers set manually here.
+  const hashedAssetsDir = path.join(frontendDistDir, 'assets') + path.sep;
   app.use(
     express.static(frontendDistDir, {
       index: false,
       dotfiles: 'ignore',
-      maxAge: config.isProduction ? '1y' : 0,
-      setHeaders(res) {
+      cacheControl: false,
+      setHeaders(res, filePath) {
         res.setHeader('X-Content-Type-Options', 'nosniff');
+        // Only content-hashed files can be cached forever — a new build
+        // gives them a new name. Unhashed files keep their name across
+        // releases, so browsers must revalidate them or they'd never see
+        // an update.
+        res.setHeader(
+          'Cache-Control',
+          config.isProduction && filePath.startsWith(hashedAssetsDir)
+            ? 'public, max-age=31536000, immutable'
+            : 'no-cache',
+        );
       },
     }),
   );

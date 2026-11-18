@@ -33,5 +33,12 @@ export function createCatalogRouter(
     });
   });
 
+  // Just the counters, for the footer to poll while a page stays open —
+  // far cheaper than re-reading every site, and reading it is not a view.
+  router.get('/stats', (_req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json(statsService.summary());
+  });
+
   return router;
 }

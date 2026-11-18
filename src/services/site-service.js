@@ -101,11 +101,18 @@ async function readListingMetadata(root) {
   }
 }
 
-async function describeSite(pathId, root) {
-  const [metadata, stats, sizeBytes] = await Promise.all([
-    readListingMetadata(root),
-    fs.stat(root),
-    directorySize(root),
+function storedSize(metadata) {
+  const size = metadata?.sizeBytes;
+  return Number.isSafeInteger(size) && size >= 0 ? size : null;
+}
+
+async function describeSite(pathId, root, metadata) {
+  // Every upload and edit records sizeBytes and uploadedAt, so the
+  // recursive size walk and the stat are only needed for records that
+  // predate those fields — a listing must not re-read every file on disk.
+  const [stats, sizeBytes] = await Promise.all([
+    metadata?.uploadedAt ? null : fs.stat(root),
+    storedSize(metadata) ?? directorySize(root),
   ]);
 
   // Absent/unrecognized `type` means this record predates the "link"
@@ -203,18 +210,24 @@ export function createSiteService(config) {
     const entries = await fs.readdir(config.sitesDir, { withFileTypes: true });
     const sites = [];
 
-    for (const entry of entries) {
-      if (!entry.isDirectory() || !isValidPathId(entry.name)) {
-        continue;
-      }
+    // Sites are independent, so read them concurrently rather than one
+    // directory at a time.
+    const described = await Promise.all(
+      entries.map(async (entry) => {
+        if (!entry.isDirectory() || !isValidPathId(entry.name)) {
+          return null;
+        }
 
-      const root = path.join(config.sitesDir, entry.name);
-      if (!(await pathExists(path.join(root, 'index.html')))) {
-        continue;
-      }
+        const root = path.join(config.sitesDir, entry.name);
+        if (!(await pathExists(path.join(root, 'index.html')))) {
+          return null;
+        }
 
-      const site = await describeSite(entry.name, root);
-      if (includeDisabled || site.enabled) {
+        return describeSite(entry.name, root, await readListingMetadata(root));
+      }),
+    );
+    for (const site of described) {
+      if (site && (includeDisabled || site.enabled)) {
         sites.push(site);
       }
     }
@@ -233,7 +246,7 @@ export function createSiteService(config) {
     if (!(await exists(pathId))) {
       throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
     }
-    return describeSite(pathId, root);
+    return describeSite(pathId, root, await readListingMetadata(root));
   }
 
   async function update(pathId, { title, description, version, linkUrl, categoryId, ...protection }) {
@@ -298,10 +311,8 @@ export function createSiteService(config) {
 
     const normalizedSortOrder = normalizeSortOrder(sortOrder);
 
-    const [existingMetadata, site] = await Promise.all([
-      readMetadata(root),
-      describeSite(pathId, root),
-    ]);
+    const existingMetadata = await readMetadata(root);
+    const site = await describeSite(pathId, root, existingMetadata);
     const metadata = {
       ...existingMetadata,
       schemaVersion: 7,
@@ -337,10 +348,8 @@ export function createSiteService(config) {
       throw new AppError('要修改的网页不存在。', 404, 'SITE_NOT_FOUND');
     }
 
-    const [existingMetadata, site] = await Promise.all([
-      readMetadata(root),
-      describeSite(pathId, root),
-    ]);
+    const existingMetadata = await readMetadata(root);
+    const site = await describeSite(pathId, root, existingMetadata);
     const metadata = {
       ...existingMetadata,
       schemaVersion: 7,

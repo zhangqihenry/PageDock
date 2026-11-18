@@ -68,7 +68,13 @@ export function createSiteDispatcher(siteService, { onPageView = null } = {}) {
       next();
       return;
     }
-    if (!(await siteService.isPublished(parsed.pathId))) {
+    // Reuse the access guard's lookup when it ran for this same site.
+    const known = res.locals.siteAccess;
+    const published =
+      known?.pathId === parsed.pathId
+        ? Boolean(known.access?.enabled)
+        : await siteService.isPublished(parsed.pathId);
+    if (!published) {
       next();
       return;
     }
