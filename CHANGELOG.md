@@ -1,5 +1,13 @@
 # Changelog / 更新日志
 
+## v1.8.0 — 2026-11-19
+
+**EN:**
+- Fixed some small bugs and made some small adjustments.
+
+**中文：**
+- 修复了一些小 bug，做了一些小调整。
+
 ## v1.7.0 — 2026-11-19
 
 **EN:**
