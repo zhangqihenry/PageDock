@@ -1,4 +1,9 @@
-<p align="center"><img src="Logo.png" alt="PageDock" width="480"></p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
+    <img src="docs/assets/logo-light.svg" alt="PageDock" width="420">
+  </picture>
+</p>
 
 # PageDock
 

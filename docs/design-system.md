@@ -230,7 +230,37 @@ Under `prefers-reduced-motion: reduce`, `tokens.css` sets every duration to 1ms 
 
 ---
 
-## 6. 图标 / Iconography
+## 6. 标志与图标 / Logo & iconography
+
+### 6.1 标志 / Logo
+
+**寓意 / Concept**：两张网页安静地停泊在一道平缓的水波之上——“静泊”的直接图形化。前一张带折角，是“网页”；后一张半透明，表示“不止一张”；水波是港湾，只有平缓的三段起伏，不做浪花。
+Two pages resting above one gentle line of water — Quiet Dock drawn literally. The front page with its folded corner says "web page"; the translucent one behind says "more than one"; the water is the harbor, three soft swells, never a crashing wave.
+
+**构成 / Construction**
+
+- 图形标志画在 64 单位网格上：圆角方块 `rx 18`；后页 21×27 `rx 3.5`，不透明度 .42；前页 21×27，7 单位折角；水波 3 段、振幅 2.4、描边 3.4、圆头。
+  The mark sits on a 64-unit grid: tile `rx 18`; back page 21×27 `rx 3.5` at .42 opacity; front page 21×27 with a 7-unit fold; water in 3 swells, amplitude 2.4, 3.4 stroke, round caps.
+- 字标 “PageDock” 不用字体文件，而是和图标同一种语言：几何单线、圆头圆角，x 高度 20、大写高度 28、描边 4.6。这样它在任何设备上都一模一样，也不涉及字体授权。
+  The wordmark uses no font file; it speaks the icon language — geometric monoline, round caps and joins, x-height 20, cap height 28, stroke 4.6 — so it renders identically everywhere and needs no font license.
+- 标志与字标的间距 = 图形高度的 1/3；四周留白至少为图形高度的 1/4。
+  Gap between mark and wordmark = 1/3 of the mark's height; clear space on every side ≥ 1/4 of it.
+
+**颜色 / Color**：方块用 `--accent`，页面和水波用 `--accent-ink`，因此在界面里会自动跟随明暗主题和 36 种配色。静态文件（README、favicon）使用默认配色：浅色背景用红色 `#c1121f` + 白，深色背景用 `#ff6a52` + 深色，字标分别用 `--ink` 的明/暗值。不要给标志加描边、阴影、渐变，也不要改变比例或单独拆用水波。
+The tile is `--accent`, pages and water are `--accent-ink`, so in the app it follows light/dark and all 36 themes on its own. Static files use the default theme. Never add outlines, shadows or gradients, never stretch it, never use the water alone.
+
+**尺寸 / Sizes**：图形标志最小 16px（favicon）；页头使用 `--size-brand`。完整标志（图形 + 字标）最小高度 24px。
+Mark ≥ 16px (favicon); the header uses `--size-brand`. Full lockup ≥ 24px tall.
+
+**文件 / Files**（几何坐标必须保持一致 / geometry must stay identical）
+
+| 文件 / File | 用途 / Use |
+| --- | --- |
+| `frontend/src/components/ui/BrandMark.vue` | 界面中的图形标志，跟随配色 / In-app mark, follows the theme |
+| `frontend/public/favicon.svg` | 浏览器标签页图标 / Browser tab icon |
+| `docs/assets/logo-light.svg` / `logo-dark.svg` | README 中的完整标志（浅色 / 深色背景）/ Full lockup for README |
+
+### 6.2 图标 / Icons
 
 只用 `components/ui/Icon.vue` 中的图标：24×24 网格、2px 圆头描边、`currentColor`，Lucide 风格。尺寸由父元素的 CSS 决定（`--icon-sm/md/lg`）。图标旁边有文字时是装饰性的（自动 `aria-hidden`）；单独使用的图标必须传 `label`，或者由所在按钮提供 `aria-label`。新图标加到 `Icon.vue` 的 `PATHS` 中，保持同样的描边风格。
 
