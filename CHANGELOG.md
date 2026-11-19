@@ -1,5 +1,13 @@
 # Changelog / 更新日志
 
+## v1.7.0 — 2026-11-19
+
+**EN:**
+- Redesigned the visual style and animations across every page.
+
+**中文：**
+- 全面重新设计了所有页面的视觉风格与动效。
+
 ## v1.6.0 — 2026-10-07
 
 **EN:**
